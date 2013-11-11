@@ -248,15 +248,15 @@ Implementation Notes
 
 ### Top-level layers view ###
 
-![LayerArch](https://github.com/cabolanos/west/blob/master/doc/assets/west_top_level_layer_view.png)
+![LayerArch](./doc/assets/west_top_level_layer_view.png)
 
 ### Overview of supervision ###
 
-![ProcTreeAll](https://github.com/cabolanos/west/blob/master/doc/assets/west_proc_tree_all.png)
+![ProcTreeAll](./doc/assets/west_proc_tree_all.png)
 
 Zoom in to WEST:
 
-![WestProcTree](https://github.com/cabolanos/west/blob/master/doc/assets/west_proc_tree.png)
+![WestProcTree](./doc/assets/west_proc_tree.png)
 
 
 
