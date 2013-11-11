@@ -1,0 +1,18 @@
+html, body {
+  padding-top: 20px;
+  padding-bottom: 20px;
+  height: 100%;
+}
+
+.form-inline .form-group {
+  text-align: left;
+  display: inline-block;
+}
+
+/* Set the fixed height of the footer here */
+#footer {
+  position: relative;
+  height: 60px;
+  background-color: #f5f5f5;
+  margin-top: 100px;
+}

@@ -4,3 +4,8 @@ deps
 *.beam
 *.plt
 erl_crash.dump
+.idea
+.DS_Store
+*~
+*.iml
+./priv/data/*

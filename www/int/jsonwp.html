@@ -1,0 +1,192 @@
+<html xmlns="http://www.w3.org/1999/html">
+    <head>
+        <title>JSON Wire Protocol</title>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- Bootstrap -->
+        <link href="../bootstrap/css/bootstrap.css" rel="stylesheet">
+        <link href="../bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- Custom styles for this template -->
+        <link href="../css/my_theme.css" rel="stylesheet">
+
+        <script type="text/javascript">
+            if (!window.WebSocket)
+                alert("WebSocket not supported by this browser");
+
+            // Get an Element
+            function $() { return document.getElementById(arguments[0]); }
+            // Get the value of an Element
+            function $F() { return document.getElementById(arguments[0]).value; }
+
+            var count = 0;
+
+            var client = {
+                connect: function() {
+                    var baseUri =
+                        "ws://" + $('wsHostPort').value + "/west/" + $('userId').value;
+                    this._ws = new WebSocket(baseUri +
+                        "?protocol=" + "json" +
+                        "&keepalive=" + $('keepalive').checked +
+                        "&timeout=" + $('timeout').value);
+                    this._ws.onopen = this._onopen;
+                    this._ws.onmessage = this._onmessage;
+                    this._ws.onclose = this._onclose;
+                    $('msgs').innerHTML = '';
+                },
+                _onopen: function() {
+                    $('options').className = 'hidden';
+                    $('conn').className = 'hidden';
+                    $('connected').className = '';
+                    $('phrase').focus();
+                    //client._send('client-connected');
+                },
+                _send: function(message) {
+                    if (this._ws)
+                        this._ws.send(message);
+                },
+                chat: function(text) {
+                    if (text != null && text.length>0 )
+                        client._send(text);
+                },
+                _onmessage: function(m) {
+                    if (m.data){
+                        var text = m.data;
+                        var msg = $('msgs');
+                        var spanText = document.createElement('span');
+                        spanText.className = 'text';
+                        spanText.innerHTML = text;
+                        var lineBreak = document.createElement('br');
+                        msg.appendChild(spanText);
+                        msg.appendChild(lineBreak);
+                        msg.scrollTop = msg.scrollHeight - msg.clientHeight;
+                    }
+                },
+                _onclose: function(m) {
+                    this._ws = null;
+                    $('connected').className = 'hidden';
+                    $('options').className = '';
+                    $('conn').className = '';
+                    document.location.reload();
+                }
+            };
+        </script>
+
+        <!--<style type="text/css">
+            div.hidden { display: none; }
+            #msgs { margin-left: 20px; width: 1160px; }
+        </style>-->
+    </head>
+
+    <body>
+
+        <!-- Wrap all page content here -->
+        <div id="wrap">
+
+            <div class="navbar navbar-inverse navbar-fixed-top">
+                <div class="container">
+                    <!--<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>-->
+                    <a class="navbar-brand" href="https://github.com/cabolanos/eventerl.git">WEST</a>
+                    <!--<div class="nav-collapse collapse">
+                        <ul class="nav navbar-nav">
+                            <li class="active"><a href="#">Home</a></li>
+                            <li><a href="#about">About</a></li>
+                            <li><a href="#contact">Contact</a></li>
+                        </ul>
+                    </div>--><!--/.nav-collapse -->
+                </div>
+            </div>
+
+            <div class="container">
+
+                <div class="page-header">
+                    <h2>JSON Wire Protocol</h2>
+                </div>
+
+                <ul>
+                    <li>Register to a Channel: <code>{"from":"you", "event":"west:register", "data":{"channel":"your_new_channel"}}</code></li>
+                    <li>Unregister from a Channel: <code>{"from":"you", "event":"west:unregister", "data":{"channel":"your_new_channel"}}</code></li>
+                    <li>Send to a Channel: <code>{"from":"you", "event":"west:send", "data":{"channel":"your_new_channel", "body":"..your message.."}}</code></li>
+                    <li>Subscribe to a Channel: <code>{"from":"you", "event":"west:subscribe", "data":{"channel":"your_new_ps_channel"}}</code></li>
+                    <li>Unsubscribe from a Channel: <code>{"from":"you", "event":"west:unsubscribe", "data":{"channel":"your_new_ps_channel"}}</code></li>
+                    <li>Publish to a Channel: <code>{"from":"you", "event":"west:publish", "data":{"channel":"your_new_ps_channel", "body":"..your message.."}}</code></li>
+                </ul>
+
+                <form class="form-inline" id="options">
+                    <div class="page-header">
+                        <h3>Connection Parameters</h3>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input id="keepalive" type="checkbox"> Enable keepalive timer
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <input id="timeout" type="text" class="form-control" placeholder="Timeout (ms)">
+                    </div>
+                </form>
+
+                </br>
+
+                <form class="form-inline" role="form" id="conn">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="userId" placeholder="Username">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="wsHostPort" placeholder="Host[:Port] (ex.: localhost:8888)">
+                    </div>
+                    <button id="cA" class="btn btn-default btn-primary" type="submit" name="connect">Connect</button>
+                </form>
+
+                <div id="connected" class="hidden">
+
+                    <form class="form-inline" role="form">
+                        <div class="col-lg-10 form-group">
+                            <input type="text" class="form-control" id="phrase" placeholder="Enter message">
+                        </div>
+                        <button id="sendB" type="submit" class="btn btn-default">Send</button>
+                    </form>
+
+                    </br>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">Event Log</h3>
+                                </div>
+                                <div id="msgs" class="panel-body">
+                                    Panel content
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div><!-- /.container -->
+
+        </div>
+
+        <div id="footer">
+            <div class="container">
+                <p class="text-muted credit">Example courtesy <a href="http://cabolanos.blogspot.com">Carlos Andres Bola&ntilde;os R.A.</a></p>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $('cA').onclick = function(event) { client.connect(); return false; };
+            $('sendB').onclick = function(event) { client.chat($F('phrase')); $('phrase').value = ''; $('phrase').focus(); return false; };
+        </script>
+
+        <!-- Bootstrap core JavaScript
+        ================================================== -->
+        <!-- Placed at the end of the document so the pages load faster -->
+        <script src="./assets/js/jquery.js"></script>
+        <script src="./bootstrap/js/bootstrap.min.js"></script>
+    </body>
+</html>

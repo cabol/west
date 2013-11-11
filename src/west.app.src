@@ -1,0 +1,10 @@
+{application, west,
+ [
+  {description, "Web Event Systems Tool"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {applications, [kernel, stdlib, riak_core]},
+  {mod, {west_app, []}},
+  {env, []}
+ ]
+}.
