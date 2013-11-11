@@ -50,6 +50,7 @@
 -type key()         :: iolist() | atom().
 -type bucket()      :: iolist() | atom().
 -type cb_spec()     :: {module(), function() | atom(), [term()] | undefined}.
+-type msg_spec()    :: msg_spec().
 
 -type name()        :: atom().
 -type gname()       :: term().

@@ -77,7 +77,7 @@ start_link(Key, CallbackSpec, Opts) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec reg(server_ref(), channel()) -> {ok, key()} | {error, term()}.
+-spec reg(server_ref(), channel()) -> {ok | error, msg_spec()}.
 reg(ServerRef, Channel) ->
     gen_server:call(ServerRef, {reg, Channel}).
 
@@ -87,7 +87,7 @@ reg(ServerRef, Channel) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec unreg(server_ref(), channel()) -> {ok, key()} | {error, term()}.
+-spec unreg(server_ref(), channel()) -> {ok | error, msg_spec()}.
 unreg(ServerRef, Channel) ->
     gen_server:call(ServerRef, {unreg, Channel}).
 
@@ -98,8 +98,7 @@ unreg(ServerRef, Channel) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec send(server_ref(), channel(), msg()) ->
-    {ok, key()} | {error, term()}.
+-spec send(server_ref(), channel(), msg()) -> {ok | error, msg_spec()}.
 send(ServerRef, Channel, Msg) ->
     gen_server:call(ServerRef, {send, Channel, Msg}).
 
@@ -110,7 +109,7 @@ send(ServerRef, Channel, Msg) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec sub(server_ref(), channel()) -> {ok, event()} | {error, term()}.
+-spec sub(server_ref(), channel()) -> {ok | error, msg_spec()}.
 sub(ServerRef, Channel) ->
     gen_server:call(ServerRef, {sub, Channel}).
 
@@ -120,7 +119,7 @@ sub(ServerRef, Channel) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec unsub(server_ref(), channel()) -> {ok, event()} | {error, term()}.
+-spec unsub(server_ref(), channel()) -> {ok | error, msg_spec()}.
 unsub(ServerRef, Channel) ->
     gen_server:call(ServerRef, {unsub, Channel}).
 
@@ -131,7 +130,7 @@ unsub(ServerRef, Channel) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec pub(server_ref(), channel(), msg()) -> ok.
+-spec pub(server_ref(), channel(), msg()) -> {ok | error, msg_spec()}.
 pub(ServerRef, Channel, Msg) ->
     gen_server:call(ServerRef, {pub, Channel, Msg}).
 
