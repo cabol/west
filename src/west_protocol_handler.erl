@@ -55,11 +55,11 @@ handle_event('west:register',
             case execute(WS, Ch, Ch, Val) of
                 {error, _} ->
                     {error, ?RES_INTERNAL_ERROR(Id, Ch, "Internal error.", F)};
-                {registration_succeeded, _} ->
+                {_, registration_succeeded, _} ->
                     {ok, ?RES_REG_OK(Id, Ch, "Reg ok.", F)};
-                {registration_denied, _} ->
+                {_, registration_denied, _} ->
                     {ok, ?RES_REG_DENIED(Id, Ch, "Reg denied.", F)};
-                {registration_already_exist, _} ->
+                {_, registration_already_exist, _} ->
                     {ok, ?RES_REG_ALREADY_EXIST(Id, Ch, "Reg exist.", F)};
                 _ ->
                     {error, ?RES_REG_FAILED(Id, Ch, "Reg failed.", F)}
@@ -85,9 +85,9 @@ handle_event('west:unregister',
             case execute(WS, Ch, Ch, Val) of
                 {error, _} ->
                     {error, ?RES_INTERNAL_ERROR(Id, Ch, "Internal error.", F)};
-                {unregistration_succeeded, _} ->
+                {_, unregistration_succeeded, _} ->
                     {ok, ?RES_UNREG_OK(Id, Ch, "Unreg ok.", F)};
-                {registration_not_found, _} ->
+                {_, registration_not_found, _} ->
                     {ok, ?RES_REG_NOT_FOUND(Id, Ch, "Reg not found", F)};
                 _ ->
                     {error, ?RES_UNREG_FAILED(Id, Ch, "Unreg failed.", F)}
@@ -113,9 +113,9 @@ handle_event('west:send',
             case execute(WS, Ch, Ch, Val) of
                 {error, _} ->
                     {error, ?RES_INTERNAL_ERROR(Id, Ch, "Internal error.", F)};
-                {sending_succeeded, _} ->
+                {_, sending_succeeded, _} ->
                     {ok, ?RES_SEND_OK(Id, Ch, "Message sent.", F)};
-                {sending_failed, _} ->
+                {_, sending_failed, _} ->
                     {ok, ?RES_REG_NOT_FOUND(Id, Ch, "Reg not found", F)};
                 _ ->
                     {error, ?RES_SEND_FAILED(Id, Ch, "Send failed.", F)}
@@ -165,11 +165,11 @@ handle_event('west:subscribe',
             case execute(WS, K, Ch, Val) of
                 {error, _} ->
                     {error, ?RES_INTERNAL_ERROR(Id, Ch, "Internal error.", F)};
-                {subscription_succeeded, _} ->
+                {_, subscription_succeeded, _} ->
                     {ok, ?RES_SUB_OK(Id, Ch, "Subscription ok.", F)};
-                {subscription_failed, _} ->
+                {_, subscription_failed, _} ->
                     {ok, ?RES_SUB_FAILED(Id, Ch, "Sub error.", F)};
-                {subscription_already_exist, _} ->
+                {_, subscription_already_exist, _} ->
                     {ok, ?RES_SUB_ALREADY_EXIST(Id, Ch, "Sub exist.", F)};
                 _ ->
                     {error, ?RES_SUB_FAILED(Id, Ch, "Subscription failed.", F)}
@@ -195,9 +195,9 @@ handle_event('west:unsubscribe',
             case execute(WS, K, Ch, Val) of
                 {error, _} ->
                     {error, ?RES_INTERNAL_ERROR(Id, Ch, "Internal error.", F)};
-                {unsubscription_succeeded, _} ->
+                {_, unsubscription_succeeded, _} ->
                     {ok, ?RES_UNSUB_OK(Id, Ch, "Unsub ok.", F)};
-                {subscription_not_found, _} ->
+                {_, subscription_not_found, _} ->
                     {ok, ?RES_SUB_NOT_FOUND(Id, Ch, "Sub not found.", F)};
                 _ ->
                     {error, ?RES_UNSUB_FAILED(Id, Ch, "Unsub failed.", F)}

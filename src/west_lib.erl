@@ -75,14 +75,14 @@ reg(Scope, Ref, Key, CbSpec) ->
             register(Name, Pid),
             Reply = case west_eh:reg(Name, Key) of
                         {ok, _} ->
-                            {registration_succeeded, Key};
+                            {ok, registration_succeeded, Key};
                         {error, _} ->
                             west_eh:delete(Name),
-                            {registration_denied, Key}
+                            {error, registration_denied, Key}
                     end,
             Reply;
         _ ->
-            {registration_already_exist, Key}
+            {error, registration_already_exist, Key}
     end.
 
 %%--------------------------------------------------------------------
@@ -109,10 +109,10 @@ unreg(Ref, Key) ->
     Name = west_utils:build_name([Ref, Key]),
     case whereis(Name) of
         undefined ->
-            {registration_not_found, Key};
+            {error, registration_not_found, Key};
         _ ->
             west_eh:delete(Name),
-            {unregistration_succeeded, Key}
+            {ok, unregistration_succeeded, Key}
     end.
 
 %%--------------------------------------------------------------------
@@ -142,9 +142,9 @@ unreg(Ref, Key) ->
 send(Scope, ETag, Key, Msg) ->
     Reply = case ?SEND(Scope, ETag, Key, Msg) of
                 true ->
-                    {sending_succeeded, Key};
+                    {ok, sending_succeeded, Key};
                 _ ->
-                    {sending_failed, Key}
+                    {error, sending_failed, Key}
             end,
     Reply.
 
@@ -181,14 +181,14 @@ sub(Scope, Ref, Event, CbSpec) ->
             register(Name, Pid),
             Reply = case west_eh:subscribe(Name, Event) of
                         {ok, _} ->
-                            {subscription_succeeded, Event};
+                            {ok, subscription_succeeded, Event};
                         {error, _} ->
                             west_eh:delete(Name),
-                            {subscription_failed, Event}
+                            {error, subscription_failed, Event}
                     end,
             Reply;
         _ ->
-            {subscription_already_exist, Event}
+            {error, subscription_already_exist, Event}
     end.
 
 %%--------------------------------------------------------------------
@@ -215,10 +215,10 @@ unsub(Ref, Event) ->
     Name = west_utils:build_name([Ref, Event]),
     case whereis(Name) of
         undefined ->
-            {subscription_not_found, Event};
+            {error, subscription_not_found, Event};
         _ ->
             west_eh:delete(Name),
-            {unsubscription_succeeded, Event}
+            {ok, unsubscription_succeeded, Event}
     end.
 
 %%--------------------------------------------------------------------
@@ -248,8 +248,8 @@ unsub(Ref, Event) ->
 pub(Scope, ETag, Event, Msg) ->
     Reply = case ?PS_PUB(Scope, ETag, Event, Msg) of
                 true ->
-                    {publication_succeeded, Event};
+                    {ok, publication_succeeded, Event};
                 _ ->
-                    {publication_failed, Event}
+                    {error, publication_failed, Event}
             end,
     Reply.

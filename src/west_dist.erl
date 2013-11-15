@@ -180,10 +180,18 @@ do_write(Bucket, Key, Op, Val, Opts) ->
 %%--------------------------------------------------------------------
 wait_for_reqid(ReqID, Timeout) ->
     receive
-        {Res, ReqID} ->
-            Res;
-        {_Res, ReqID, Reason} ->
-            Reason
+        {Code, ReqID} ->
+            Code;
+        {_Code, ReqID, Reply} ->
+            case is_list(Reply) of
+                true ->
+                    case proplists:get_value(ok, Reply) of
+                        undefined -> lists:last(Reply);
+                        Val       -> Val
+                    end;
+                _ ->
+                    Reply
+            end
     after Timeout ->
 	    {error, timeout}
     end.
