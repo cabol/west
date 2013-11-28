@@ -21,14 +21,14 @@
 %%%-------------------------------------------------------------------
 %%% @author Carlos Andres Bolaños R.A. <cabolanos@niagarasystems.co>
 %%% @copyright (C) 2013, <Carlos Andres Bolaños>, All Rights Reserved.
-%%% @doc JSON Wire Protocol. This module is the `yaws' extended
+%%% @doc Text Wire Protocol. This module is the `yaws' extended
 %%%      callback module. Here the WS messages are received and
 %%%      handle them.
 %%% @see <a href="https://github.com/klacke/yaws">Yaws Sources</a>
 %%% @end
-%%% Created : 08. Nov 2013 3:05 AM
+%%% Created : 03. Oct 2013 9:57 AM
 %%%-------------------------------------------------------------------
--module(west_jsonwp_ycbk_ext).
+-module(west_ws_textwp_handler).
 
 %% Export for websocket callbacks
 -export([init/1,
@@ -59,7 +59,7 @@
 %% @end
 %%--------------------------------------------------------------------
 init([Arg, InitialState]) ->
-    io:format("Initalize ~p: ~p~n", [self(), InitialState]),
+    ?LOG_INFO("Initalize ~p: ~p~n", [self(), InitialState]),
     Dist = case application:get_env(west, dist) of
                {ok, Env0} -> Env0;
                _          -> west_dist
@@ -83,7 +83,7 @@ init([Arg, InitialState]) ->
                                             west_dist=WDist,
                                             scope=Scope,
                                             cb = CbSpec,
-                                            format=json}}};
+                                            format=text}}};
         _ ->
             {error, <<"Error, missing key in path.">>}
     end.
@@ -98,8 +98,7 @@ init([Arg, InitialState]) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_open(WSState, State) ->
-    Response = ?RES_CONN_ESTABLISHED(undefined, "Ok", json),
-    yaws_websockets:send(WSState, {text, Response}),
+    yaws_websockets:send(WSState, {text, <<"Welcome !">>}),
     {ok, State}.
 
 %%--------------------------------------------------------------------
@@ -112,7 +111,7 @@ handle_open(WSState, State) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_message({text, <<"bye">>}, #state{nb_texts=N, nb_bins=M}=State) ->
-    io:format("User said bye. ~p text / ~p binary messages echoed ~n", [N, M]),
+    ?LOG_INFO("bye - Msg processed: ~p text, ~p binary~n", [N, M]),
     NbTexts = list_to_binary(integer_to_list(N)),
     NbBins  = list_to_binary(integer_to_list(M)),
     Messages = [{text, <<"Goodbye !">>},
@@ -131,23 +130,17 @@ handle_message({text, <<"bye">>}, #state{nb_texts=N, nb_bins=M}=State) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_message({text, Msg}, #state{nb_texts=N}=State) ->
-    io:format("Receive text message (N=~p): ~p bytes~n", [N, byte_size(Msg)]),
-    case west_msg_utils:parse_msg(Msg) of
-        {error, Reason} ->
-            {reply, {text, Reason}, State#state{nb_texts=N+1}};
-        ParsedMsg ->
-            WestEvent = binary_to_atom(ParsedMsg#msg_spec.event, utf8),
-            case west_protocol_handler:handle_event(WestEvent,
-                                                    ParsedMsg,
-                                                    State#state.server) of
-                {ok, Response} ->
-                    {reply, {text, Response}, State#state{nb_texts=N+1}};
-                {error, Err0} ->
-                    {reply, {text, Err0}, State#state{nb_texts=N+1}};
+    ?LOG_INFO("Received text msg (N=~p): ~p bytes~n", [N, byte_size(Msg)]),
+    case parse_msg(Msg) of
+        none ->
+            {reply, {text, Msg}, State#state{nb_texts=N+1}};
+        Cmd ->
+            case handle_event(Cmd, State#state.server) of
+                {ok, Reason} ->
+                    {reply, {text, Reason}, State#state{nb_texts=N+1}};
                 _ ->
-                    ?MSG{id=Id, data=?MSG_DATA{channel=Ch}} = ParsedMsg,
-                    Err1 = ?RES_ACTION_NOT_ALLOWED(Id, Ch, "Invalid.", json),
-                    {reply, {text, Err1}, State#state{nb_texts=N+1}}
+                    ErrMsg = <<"west:action_not_allowed">>,
+                    {reply, {text, ErrMsg}, State#state{nb_texts=N+1}}
             end
     end;
 
@@ -162,7 +155,7 @@ handle_message({text, Msg}, #state{nb_texts=N}=State) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_message({binary, Msg}, #state{nb_bins=M}=State) ->
-    io:format("Receive binary msg (M=~p): ~p bytes~n", [M, byte_size(Msg)]),
+    ?LOG_INFO("Received binary msg (M=~p): ~p bytes~n", [M, byte_size(Msg)]),
     {reply, {binary, Msg}, State#state{nb_bins=M+1}};
 
 %%--------------------------------------------------------------------
@@ -175,7 +168,7 @@ handle_message({binary, Msg}, #state{nb_bins=M}=State) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_message({close, Status, Reason}, _) ->
-    io:format("Close connection: ~p - ~p~n", [Status, Reason]),
+    ?LOG_INFO("Close connection: ~p - ~p~n", [Status, Reason]),
     {close, Status}.
 
 %%--------------------------------------------------------------------
@@ -191,7 +184,7 @@ handle_message({close, Status, Reason}, _) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_info(timeout, State) ->
-    io:format("process timed out~n", []),
+    ?LOG_INFO("process timed out~n", []),
     {reply, {text, <<"Anybody Else ?">>}, State};
 handle_info(_Info, State) ->
     {noreply, State}.
@@ -207,12 +200,122 @@ handle_info(_Info, State) ->
 %% @end
 %%--------------------------------------------------------------------
 terminate(Reason, State) ->
-    io:format("terminate ~p: ~p (state:~p)~n", [self(), Reason, State]),
+    ?LOG_INFO("terminate ~p: ~p (state:~p)~n", [self(), Reason, State]),
     ok.
+
+%%%===================================================================
+%%% Event handlers
+%%%===================================================================
+
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% Handle the register event.
+%%
+%% @end
+%%--------------------------------------------------------------------
+handle_event(["reg", Ch], WS) ->
+    MsgSpec = ?MSG{id=undefined, data=?MSG_DATA{channel=Ch}},
+    Res = west_protocol_handler:handle_event('west:register', MsgSpec, WS),
+    {_, ?MSG{event=Event}} = Res,
+    {ok, iolist_to_binary(Event)};
+
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% Handle the unregister event.
+%%
+%% @end
+%%--------------------------------------------------------------------
+handle_event(["unreg", Ch], WS) ->
+    MsgSpec = ?MSG{id=undefined, data=?MSG_DATA{channel=Ch}},
+    Res = west_protocol_handler:handle_event('west:unregister', MsgSpec, WS),
+    {_, ?MSG{event=Event}} = Res,
+    {ok, iolist_to_binary(Event)};
+
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% Handle the send event.
+%%
+%% @end
+%%--------------------------------------------------------------------
+handle_event(["send", Ch, Msg], WS) ->
+    MsgSpec = ?MSG{id=undefined, data=?MSG_DATA{channel=Ch, body=Msg}},
+    Res = west_protocol_handler:handle_event('west:send', MsgSpec, WS),
+    {_, ?MSG{event=Event}} = Res,
+    {ok, iolist_to_binary(Event)};
+
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% Handle the publish event.
+%%
+%% @end
+%%--------------------------------------------------------------------
+handle_event(["pub", Ch, Msg], WS) ->
+    MsgSpec = ?MSG{id=undefined, data=?MSG_DATA{channel=Ch, body=Msg}},
+    Res = west_protocol_handler:handle_event('west:publish', MsgSpec, WS),
+    {_, ?MSG{event=Event}} = Res,
+    {ok, iolist_to_binary(Event)};
+
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% Handle the subscribe event.
+%%
+%% @end
+%%--------------------------------------------------------------------
+handle_event(["sub", Ch], WS) ->
+    MsgSpec = ?MSG{id=undefined, data=?MSG_DATA{channel=Ch}},
+    Res = west_protocol_handler:handle_event('west:subscribe', MsgSpec, WS),
+    {_, ?MSG{event=Event}} = Res,
+    {ok, iolist_to_binary(Event)};
+
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% Handle the unsubscribe event.
+%%
+%% @end
+%%--------------------------------------------------------------------
+handle_event(["unsub", Ch], WS) ->
+    MsgSpec = ?MSG{id=undefined, data=?MSG_DATA{channel=Ch}},
+    Res = west_protocol_handler:handle_event('west:unsubscribe', MsgSpec, WS),
+    {_, ?MSG{event=Event}} = Res,
+    {ok, iolist_to_binary(Event)};
+
+handle_event(Any, _State) ->
+    {none, Any}.
 
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Parse the text-based event.
+%%
+%% @end
+%%--------------------------------------------------------------------
+parse_msg(Msg) ->
+    L = [string:strip(X, both, $ ) ||
+         X <- string:tokens(binary_to_list(Msg), "\"")],
+    case L of
+        [C, M] -> string:tokens(C, " ") ++ [M];
+        [C]    -> string:tokens(C, " ");
+        _      -> none
+    end.
+
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% Builds a custom message.
+%%
+%% @end
+%%--------------------------------------------------------------------
+build_msg(Text, Args) ->
+    lists:flatten(io_lib:format(Text, Args)).
 
 %%--------------------------------------------------------------------
 %% @private
@@ -221,6 +324,12 @@ terminate(Reason, State) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
-ev_callback({ETag, Event, Msg}, [WSRef, Id]) ->
-    Reply = ?RES_MSG_RECEIVED(Id, ETag, Event, Msg, json),
-    yaws_api:websocket_send(WSRef, {text, Reply}).
+ev_callback({ETag, Event, Msg}, [WSRef, _Id]) ->
+    Body = case Msg of
+               Msg when is_binary(Msg) ->
+                   binary_to_list(Msg);
+               _ ->
+                   Msg
+           end,
+    Reply = build_msg("~s ~p:message_received  ~p", [ETag, Event, Body]),
+    yaws_api:websocket_send(WSRef, {text, list_to_binary(Reply)}).

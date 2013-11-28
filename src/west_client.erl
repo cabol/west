@@ -25,7 +25,7 @@
 %%% @end
 %%% Created : 10. Nov 2013 10:53 AM
 %%%-------------------------------------------------------------------
--module(west_gs_client).
+-module(west_client).
 
 -behaviour(gen_server).
 

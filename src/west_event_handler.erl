@@ -27,7 +27,7 @@
 %%% @end
 %%% Created : 03. Oct 2013 9:57 AM
 %%%-------------------------------------------------------------------
--module(west_eh).
+-module(west_event_handler).
 
 -behaviour(gen_server).
 
@@ -86,7 +86,7 @@ start_link(Scope, CallbackSpec, Opts) ->
 -spec create(scope(), cb_spec(), proplist()) ->
              {ok, pid()} | {error, term()}.
 create(Scope, CallbackSpec, Opts) ->
-    west_eh_sup:start_child(Scope, CallbackSpec, Opts).
+    west_event_handler_sup:start_child(Scope, CallbackSpec, Opts).
 
 %%--------------------------------------------------------------------
 %% @doc

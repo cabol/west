@@ -61,6 +61,9 @@
 -define(PRINT(Var),
     io:format("DEBUG: ~p:~p - ~p~n~n ~p~n~n", [?MODULE, ?LINE, ??Var, Var])).
 
+-define(LOG_INFO(Format, Vars),
+    error_logger:info_msg(Format, Vars)).
+
 -define(N, 3).
 -define(R, 2).
 -define(W, 2).

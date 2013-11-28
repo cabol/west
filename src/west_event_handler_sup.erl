@@ -21,11 +21,11 @@
 %%%-------------------------------------------------------------------
 %%% @author Carlos Andres Bolaños R.A. <cabolanos@niagarasystems.co>
 %%% @copyright (C) 2013, <Carlos Andres Bolaños>, All Rights Reserved.
-%%% @doc `WEST'. This module is the supervisor of 'west_eh'.
+%%% @doc Supervisor of 'west_event_handler'.
 %%% @end
 %%% Created : 03. Oct 2013 9:57 AM
 %%%-------------------------------------------------------------------
--module(west_eh_sup).
+-module(west_event_handler_sup).
 
 -behaviour(supervisor).
 
@@ -56,7 +56,7 @@ start_link() ->
 
 %%--------------------------------------------------------------------
 %% @doc
-%% Starts a new child `west_eh'.
+%% Starts a new child `west_event_handler'.
 %%
 %% @end
 %%--------------------------------------------------------------------
@@ -80,12 +80,12 @@ start_child(Scope, CallbackSpec, Opts) ->
 %% @end
 %%--------------------------------------------------------------------
 init(_Args) ->
-    Element = {west_eh,
-               {west_eh, start_link, []},
+    Element = {west_event_handler,
+               {west_event_handler, start_link, []},
                transient,
                brutal_kill,
                worker,
-               [west_eh]},
+               [west_event_handler]},
     Children = [Element],
     RestartStrategy = {simple_one_for_one, 10, 60},
     {ok, {RestartStrategy, Children}}.

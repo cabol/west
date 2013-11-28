@@ -187,6 +187,7 @@ bin_to_hex(B) when is_binary(B) ->
 %%--------------------------------------------------------------------
 -spec hmac(atom(), iodata(), iodata()) -> string().
 hmac(_Type, _Key, _Data) ->
+    %% FIXME
     error.%%bin_to_hex(crypto:hmac(Type, Key, Data)).
 
 %%--------------------------------------------------------------------

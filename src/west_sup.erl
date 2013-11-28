@@ -83,12 +83,12 @@ init(Args) ->
 %%--------------------------------------------------------------------
 -spec process_specs(list()) -> [supervisor:child_spec()].
 process_specs(Args) ->
-    EvHdlr_sup = {west_eh_sup,
-                  {west_eh_sup, start_link, []},
+    EvHdlr_sup = {west_event_handler_sup,
+                  {west_event_handler_sup, start_link, []},
                   permanent,
                   2000,
                   supervisor,
-                  [west_eh_sup]},
+                  [west_event_handler_sup]},
     Yaws = case Args of
                undefined ->
                    [];

@@ -71,13 +71,15 @@ reg(Scope, Ref, Key, CbSpec) ->
     Name = west_utils:build_name([Ref, Key]),
     case whereis(Name) of
         undefined ->
-            {ok, Pid} = west_eh:create(Scope, CbSpec, [{monitors, [Ref]}]),
+            {ok, Pid} = west_event_handler:create(Scope,
+                                                  CbSpec,
+                                                  [{monitors, [Ref]}]),
             register(Name, Pid),
-            Reply = case west_eh:reg(Name, Key) of
+            Reply = case west_event_handler:reg(Name, Key) of
                         {ok, _} ->
                             {ok, registration_succeeded, Key};
                         {error, _} ->
-                            west_eh:delete(Name),
+                            west_event_handler:delete(Name),
                             {error, registration_denied, Key}
                     end,
             Reply;
@@ -111,7 +113,7 @@ unreg(Ref, Key) ->
         undefined ->
             {error, registration_not_found, Key};
         _ ->
-            west_eh:delete(Name),
+            west_event_handler:delete(Name),
             {ok, unregistration_succeeded, Key}
     end.
 
@@ -177,13 +179,15 @@ sub(Scope, Ref, Event, CbSpec) ->
     Name = west_utils:build_name([Ref, Event]),
     case whereis(Name) of
         undefined ->
-            {ok, Pid} = west_eh:create(Scope, CbSpec, [{monitors, [Ref]}]),
+            {ok, Pid} = west_event_handler:create(Scope,
+                                                  CbSpec,
+                                                  [{monitors, [Ref]}]),
             register(Name, Pid),
-            Reply = case west_eh:subscribe(Name, Event) of
+            Reply = case west_event_handler:subscribe(Name, Event) of
                         {ok, _} ->
                             {ok, subscription_succeeded, Event};
                         {error, _} ->
-                            west_eh:delete(Name),
+                            west_event_handler:delete(Name),
                             {error, subscription_failed, Event}
                     end,
             Reply;
@@ -217,7 +221,7 @@ unsub(Ref, Event) ->
         undefined ->
             {error, subscription_not_found, Event};
         _ ->
-            west_eh:delete(Name),
+            west_event_handler:delete(Name),
             {ok, unsubscription_succeeded, Event}
     end.
 
