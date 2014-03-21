@@ -93,7 +93,7 @@ format_msg(Msg) ->
     F = fun(X) when is_atom(X) -> atom_to_binary(X, utf8);
            (X) when is_list(X) orelse is_binary(X) -> iolist_to_binary(X);
            (X) -> iolist_to_binary(lists:flatten(io_lib:format("~p", [X])))
-    end,
+        end,
     L = [{F(X), F(Y)} || {X, Y} <- L0, Y =/= undefined] ++
         [{F(data), [{F(X), F(Y)} || {X, Y} <- L1, Y =/= undefined]}],
     case ?ENC_JSON(L) of

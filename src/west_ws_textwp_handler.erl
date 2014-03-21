@@ -138,6 +138,8 @@ handle_message({text, Msg}, #state{nb_texts=N}=State) ->
             case handle_event(Cmd, State#state.server) of
                 {ok, Reason} ->
                     {reply, {text, Reason}, State#state{nb_texts=N+1}};
+                {error, Err0} ->
+                    {reply, {text, Err0}, State#state{nb_texts=N+1}};
                 _ ->
                     ErrMsg = <<"west:action_not_allowed">>,
                     {reply, {text, ErrMsg}, State#state{nb_texts=N+1}}

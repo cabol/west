@@ -11,10 +11,10 @@ A new way to communicate and integrate application, not centralized but distribu
 Overview
 --------
 
-The application `WEST` implements a distributed Web/Event-Driven System's Tool, based on WebSockets and
-Distributed Erlang. It enables applications communicate each other using a simple JSON-based or Text-based
-protocol through the WebSockets API, breaking the traditional centralized model of MoM and ESB, implementing
-a real P2P communication and integration system.
+The application `WEST` (Web/Event-Driven System's Tool) is a tool to build distributed messaging systems,
+is based on WebSockets and Distributed Erlang. It enables applications communicate each other using a simple
+JSON-based or Text-based protocol through the WebSockets API, breaking the traditional centralized model of
+MoM and ESB, implementing a real P2P communication and integration system.
 
 WEST enables the development of real time and mission critical messaging systems, given properties such as:
 massive concurrency, fault-tolerance, high scalability, high performance, and high availability.
