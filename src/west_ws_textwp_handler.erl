@@ -113,7 +113,7 @@ handle_open(WSState, State) ->
 handle_message({text, <<"bye">>}, #state{nb_texts=N, nb_bins=M}=State) ->
     ?LOG_INFO("bye - Msg processed: ~p text, ~p binary~n", [N, M]),
     NbTexts = list_to_binary(integer_to_list(N)),
-    NbBins  = list_to_binary(integer_to_list(M)),
+    NbBins = list_to_binary(integer_to_list(M)),
     Messages = [{text, <<"Goodbye !">>},
                 {text, <<NbTexts/binary, " text messages received">>},
                 {text, <<NbBins/binary, " binary messages received">>}],
@@ -135,7 +135,7 @@ handle_message({text, Msg}, #state{nb_texts=N}=State) ->
         none ->
             {reply, {text, Msg}, State#state{nb_texts=N+1}};
         Cmd ->
-            case handle_event(Cmd, State#state.server) of
+            case handle_event(string:to_lower(Cmd), State#state.server) of
                 {ok, Reason} ->
                     {reply, {text, Reason}, State#state{nb_texts=N+1}};
                 {error, Err0} ->
@@ -333,5 +333,5 @@ ev_callback({ETag, Event, Msg}, [WSRef, _Id]) ->
                _ ->
                    Msg
            end,
-    Reply = build_msg("~s ~p:message_received  ~p", [ETag, Event, Body]),
+    Reply = build_msg("~s ~p:message_received ~p", [ETag, Event, Body]),
     yaws_api:websocket_send(WSRef, {text, list_to_binary(Reply)}).

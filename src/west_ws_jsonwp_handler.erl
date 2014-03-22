@@ -114,7 +114,7 @@ handle_open(WSState, State) ->
 handle_message({text, <<"bye">>}, #state{nb_texts=N, nb_bins=M}=State) ->
     ?LOG_INFO("bye - Msg processed: ~p text, ~p binary~n", [N, M]),
     NbTexts = list_to_binary(integer_to_list(N)),
-    NbBins  = list_to_binary(integer_to_list(M)),
+    NbBins = list_to_binary(integer_to_list(M)),
     Messages = [{text, <<"Goodbye !">>},
                 {text, <<NbTexts/binary, " text messages received">>},
                 {text, <<NbBins/binary, " binary messages received">>}],

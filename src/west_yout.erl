@@ -34,8 +34,18 @@
 -include_lib("stdlib/include/erl_bits.hrl").
 -include_lib("stdlib/include/qlc.hrl").
 -include_lib("yaws/include/yaws_api.hrl").
+-include("west.hrl").
 
 out(A) ->
+    %% Hanshake callback
+    case application:get_env(west, ws_hanshake_cb) of
+        {ok, {Mod, Fun}} when Mod =/= none andalso Fun =/= none ->
+            ?LOG_INFO("apply(~p, ~p)~n", [Mod, Fun]),
+            apply(Mod, Fun, [A]);
+        _ ->
+            ok
+    end,
+
     %% To use the extended version of the basic echo callback, add
     %% 'extversion=true' in the query string.
     CallbackMod = case yaws_api:queryvar(A, "protocol") of
@@ -51,16 +61,16 @@ out(A) ->
 
     %% To define a keepalive timeout value, add 'timeout=Int' in the query
     %% string.
-    Tout  = case yaws_api:queryvar(A, "timeout") of
-                {ok, Val} ->
-                    try
-                        list_to_integer(Val)
-                    catch
-                        _:_ -> infinity
-                    end;
-                _ ->
-                    infinity
-            end,
+    Tout = case yaws_api:queryvar(A, "timeout") of
+               {ok, Val} ->
+                   try
+                       list_to_integer(Val)
+                   catch
+                       _:_ -> infinity
+                   end;
+               _ ->
+                   infinity
+           end,
 
     %% To drop connection when a timeout occured, add 'drop=true' in the query
     %% string.
@@ -85,5 +95,5 @@ out(A) ->
             {keepalive_timeout, Tout},
             {drop_on_timeout,   Drop},
             {close_if_unmasked, CloseUnmasked}
-    ],
+           ],
     {websocket, CallbackMod, Opts}.

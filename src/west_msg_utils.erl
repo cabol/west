@@ -97,8 +97,8 @@ format_msg(Msg) ->
     L = [{F(X), F(Y)} || {X, Y} <- L0, Y =/= undefined] ++
         [{F(data), [{F(X), F(Y)} || {X, Y} <- L1, Y =/= undefined]}],
     case ?ENC_JSON(L) of
-        {fail, _}   -> {error, <<"Invalid MSG, error at encode.">>};
-        EncJson     -> EncJson
+        {fail, _} -> {error, <<"Invalid MSG, error at encode.">>};
+        EncJson   -> EncJson
     end.
 
 %%--------------------------------------------------------------------
