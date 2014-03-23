@@ -4,20 +4,20 @@ Web-Event-Driven System's Tool
 
 __Authors:__ Carlos Andres Bolaños R.A. ([`cabolanos@niagarasystems.co`](mailto:cabolanos@niagarasystems.co)).
 
-A new way to communicate and integrate application, not centralized but distributed!
+A new way to build real-time and high scalable messaging-based applications, not centralized but distributed!
 
 
 
 Overview
 --------
 
-The application `WEST` (Web/Event-Driven System's Tool) is a tool to build distributed messaging systems,
-is based on WebSockets and Distributed Erlang. It enables applications communicate each other using a simple
-JSON-based or Text-based protocol through the WebSockets API, breaking the traditional centralized model of
-MoM and ESB, implementing a real P2P communication and integration system.
+`WEST` (Web/Event-Driven System's Tool) is a tool that enables the development of real-time, mission-critical and
+messaging-based systems, giving properties such as: massive concurrency, fault-tolerance, high scalability,
+high performance, and high availability.
 
-WEST enables the development of real time and mission critical messaging systems, given properties such as:
-massive concurrency, fault-tolerance, high scalability, high performance, and high availability.
+`WEST` is written in `Erlang/OTP`, enables messaging patterns like Pub/Sub and Request/Reply, and also comes with a
+WebSocket API with a JSON-based or Text-based protocol in order to interact with it. `WEST` breaks the traditional
+centralized model of MoM (Message-Oriented Middleware), implementing a real P2P communication system.
 
 
 
@@ -243,10 +243,6 @@ Implementation Notes
 ![LayerArch](./doc/assets/west_top_level_layer_view.png)
 
 ### Overview of supervision ###
-
-![ProcTreeAll](./doc/assets/west_proc_tree_all.png)
-
-Zoom in to WEST:
 
 ![WestProcTree](./doc/assets/west_proc_tree.png)
 
