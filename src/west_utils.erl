@@ -58,9 +58,9 @@ parse_query_string(Str) ->
              [string:tokens(L, "=") || L <- string:tokens(Q, "&")]]
         end,
     case string:tokens(Str, "?") of
-        [_, X]  -> F(X);
-        [X]     -> F(X);
-        _       -> error
+        [_, X] -> F(X);
+        [X]    -> F(X);
+        _      -> error
     end.
 
 %%--------------------------------------------------------------------
@@ -73,8 +73,8 @@ parse_query_string(Str) ->
 -spec get_prop(string(), list(), string()) -> term().
 get_prop(Name, Props, Default) ->
     case proplists:lookup(Name, Props) of
-        {_, V}  -> V;
-        _       -> Default
+        {_, V} -> V;
+        _      -> Default
     end.
 
 %%--------------------------------------------------------------------
@@ -106,8 +106,8 @@ props_for_types(Types, Props) ->
     Fun =
         fun(Type, Acc) ->
             case proplists:lookup(Type, Props) of
-                {_, Param}  -> [{Type, Param}] ++ Acc;
-                none        -> Acc
+                {_, Param} -> [{Type, Param}] ++ Acc;
+                none       -> Acc
             end
         end,
     lists:foldl(Fun, [], Types).
@@ -186,9 +186,8 @@ bin_to_hex(B) when is_binary(B) ->
 %% @end
 %%--------------------------------------------------------------------
 -spec hmac(atom(), iodata(), iodata()) -> string().
-hmac(_Type, _Key, _Data) ->
-    %% FIXME
-    error.%%bin_to_hex(crypto:hmac(Type, Key, Data)).
+hmac(Type, Key, Data) ->
+    bin_to_hex(crypto:hmac(Type, Key, Data)).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -198,7 +197,8 @@ hmac(_Type, _Key, _Data) ->
 %%--------------------------------------------------------------------
 -spec build_name(list()) -> atom().
 build_name(L) when is_list(L) ->
-    list_to_atom(lists:flatten(io_lib:format("p~p", [erlang:phash2(L)]))).
+    binary_to_atom(<<(<<"p">>)/binary,
+                     (integer_to_binary(erlang:phash2(L)))/binary>>, utf8).
 
 %%--------------------------------------------------------------------
 %% @doc

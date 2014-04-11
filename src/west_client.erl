@@ -180,8 +180,8 @@ init([Key, CallbackSpec, Opts]) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_call({reg, Channel}, _From, #state{server=WS}=S) ->
-    MsgSpec = ?MSG{id=undefined, data=?MSG_DATA{channel=Channel}},
-    Reply = west_protocol_handler:handle_event('west:register', MsgSpec, WS),
+    MsgSpec = ?MSG{id=undefined, channel=Channel},
+    Reply = west_protocol_handler:handle_event(register, MsgSpec, WS),
     {reply, Reply, S};
 
 %%--------------------------------------------------------------------
@@ -192,8 +192,8 @@ handle_call({reg, Channel}, _From, #state{server=WS}=S) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_call({unreg, Channel}, _From, #state{server=WS}=S) ->
-    MsgSpec = ?MSG{id=undefined, data=?MSG_DATA{channel=Channel}},
-    Reply = west_protocol_handler:handle_event('west:unregister', MsgSpec, WS),
+    MsgSpec = ?MSG{id=undefined, channel=Channel},
+    Reply = west_protocol_handler:handle_event(unregister, MsgSpec, WS),
     {reply, Reply, S};
 
 %%--------------------------------------------------------------------
@@ -204,8 +204,8 @@ handle_call({unreg, Channel}, _From, #state{server=WS}=S) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_call({send, Channel, Msg}, _From, #state{server=WS}=S) ->
-    MsgSpec = ?MSG{id=undefined, data=?MSG_DATA{channel=Channel, body=Msg}},
-    Reply = west_protocol_handler:handle_event('west:send', MsgSpec, WS),
+    MsgSpec = ?MSG{id=undefined, channel=Channel, data=Msg},
+    Reply = west_protocol_handler:handle_event(send, MsgSpec, WS),
     {reply, Reply, S};
 
 %%--------------------------------------------------------------------
@@ -216,8 +216,8 @@ handle_call({send, Channel, Msg}, _From, #state{server=WS}=S) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_call({sub, Channel}, _From, #state{server=WS}=S) ->
-    MsgSpec = ?MSG{id=undefined, data=?MSG_DATA{channel=Channel}},
-    Reply = west_protocol_handler:handle_event('west:subscribe', MsgSpec, WS),
+    MsgSpec = ?MSG{id=undefined, channel=Channel},
+    Reply = west_protocol_handler:handle_event(subscribe, MsgSpec, WS),
     {reply, Reply, S};
 
 %%--------------------------------------------------------------------
@@ -228,8 +228,8 @@ handle_call({sub, Channel}, _From, #state{server=WS}=S) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_call({unsub, Channel}, _From, #state{server=WS}=S) ->
-    MsgSpec = ?MSG{id=undefined, data=?MSG_DATA{channel=Channel}},
-    Reply = west_protocol_handler:handle_event('west:unsubscribe', MsgSpec, WS),
+    MsgSpec = ?MSG{id=undefined, channel=Channel},
+    Reply = west_protocol_handler:handle_event(unsubscribe, MsgSpec, WS),
     {reply, Reply, S};
 
 %%--------------------------------------------------------------------
@@ -240,8 +240,8 @@ handle_call({unsub, Channel}, _From, #state{server=WS}=S) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_call({pub, Channel, Msg}, _From, #state{server=WS}=S) ->
-    MsgSpec = ?MSG{id=undefined, data=?MSG_DATA{channel=Channel, body=Msg}},
-    Reply = west_protocol_handler:handle_event('west:publish', MsgSpec, WS),
+    MsgSpec = ?MSG{id=undefined, channel=Channel, data=Msg},
+    Reply = west_protocol_handler:handle_event(publish, MsgSpec, WS),
     {reply, Reply, S}.
 
 %%--------------------------------------------------------------------

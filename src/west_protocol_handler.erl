@@ -45,13 +45,13 @@
 %%
 %% @end
 %%--------------------------------------------------------------------
-handle_event('west:register',
-             ?MSG{id=Id, data=?MSG_DATA{channel=Ch}},
-             ?WEST_SERVER{name=Name, scope=Scope, cb=Cbk, format=F}=WS) ->
+handle_event(register,
+             ?MSG{id=Id, channel=Ch},
+             ?WEST_SERVER{name=Name, scope=Sc, cb=Cbk, format=F}=WS) ->
     case Ch =/= undefined of
         true ->
             Ev = west_utils:iolist_to_atom(Ch),
-            Val = {west_lib, reg, [Scope, {Name, node()}, Ev, Cbk]},
+            Val = {west_lib, reg, [Sc, {Name, node()}, Ev, Cbk]},
             case execute(WS, Ch, Ch, Val) of
                 {error, _} ->
                     {error, ?RES_INTERNAL_ERROR(Id, Ch, "Internal error.", F)};
@@ -75,8 +75,8 @@ handle_event('west:register',
 %%
 %% @end
 %%--------------------------------------------------------------------
-handle_event('west:unregister',
-             ?MSG{id=Id, data=?MSG_DATA{channel=Ch}},
+handle_event(unregister,
+             ?MSG{id=Id, channel=Ch},
              ?WEST_SERVER{name=Name, format=F}=WS) ->
     case Ch =/= undefined of
         true ->
@@ -103,13 +103,13 @@ handle_event('west:unregister',
 %%
 %% @end
 %%--------------------------------------------------------------------
-handle_event('west:send',
-             ?MSG{id=Id, data=?MSG_DATA{channel=Ch, body=Body}},
+handle_event(send,
+             ?MSG{id=Id, channel=Ch, data=Data},
              ?WEST_SERVER{key=K, scope=Scope, format=F}=WS) ->
-    case Ch =/= undefined andalso Body =/= undefined of
+    case Ch =/= undefined andalso Data =/= undefined of
         true ->
             Ev = west_utils:iolist_to_atom(Ch),
-            Val = {west_lib, send, [Scope, K, Ev, Body]},
+            Val = {west_lib, send, [Scope, K, Ev, Data]},
             case execute(WS, Ch, Ch, Val) of
                 {error, _} ->
                     {error, ?RES_INTERNAL_ERROR(Id, Ch, "Internal error.", F)};
@@ -131,17 +131,17 @@ handle_event('west:send',
 %%
 %% @end
 %%--------------------------------------------------------------------
-handle_event('west:publish',
-             ?MSG{id=Id, data=?MSG_DATA{channel=Ch, body=Body}},
+handle_event(publish,
+             ?MSG{id=Id, channel=Ch, data=Data},
              ?WEST_SERVER{key=K, dist=Dist, format=F}) ->
-    case Ch =/= undefined andalso Body =/= undefined of
+    case Ch =/= undefined andalso Data =/= undefined of
         true ->
             Event = west_utils:iolist_to_atom(Ch),
             case Dist of
                 gproc_dist ->
-                    ?PS_PUB(g, K, Event, Body);
+                    ?PS_PUB(g, K, Event, Data);
                 _ ->
-                    ?PS_PUB_ALL(l, K, Event, Body)
+                    ?PS_PUB_ALL(l, K, Event, Data)
             end,
             {ok, ?RES_PUB_OK(Id, Ch, "Message published.", F)};
         _ ->
@@ -155,8 +155,8 @@ handle_event('west:publish',
 %%
 %% @end
 %%--------------------------------------------------------------------
-handle_event('west:subscribe',
-             ?MSG{id=Id, data=?MSG_DATA{channel=Ch}},
+handle_event(subscribe,
+             ?MSG{id=Id, channel=Ch},
              ?WEST_SERVER{name=Name, key=K, scope=Sc, cb=Cbk, format=F}=WS) ->
     case Ch =/= undefined of
         true ->
@@ -185,8 +185,8 @@ handle_event('west:subscribe',
 %%
 %% @end
 %%--------------------------------------------------------------------
-handle_event('west:unsubscribe',
-             ?MSG{id=Id, data=?MSG_DATA{channel=Ch}},
+handle_event(unsubscribe,
+             ?MSG{id=Id, channel=Ch},
              ?WEST_SERVER{name=Name, key=K, format=F}=WS) ->
     case Ch =/= undefined of
         true ->

@@ -217,10 +217,13 @@ terminate(Reason, State) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_event(["reg", Ch], WS) ->
-    MsgSpec = ?MSG{id=undefined, data=?MSG_DATA{channel=Ch}},
-    Res = west_protocol_handler:handle_event('west:register', MsgSpec, WS),
+    MsgSpec = ?MSG{id=undefined, channel=Ch},
+    Res = west_protocol_handler:handle_event(register, MsgSpec, WS),
     {_, ?MSG{event=Event}} = Res,
-    {ok, iolist_to_binary(Event)};
+    BinRes = <<(<<"west ">>)/binary,
+               (iolist_to_binary(Ch ++ ":"))/binary,
+               (iolist_to_binary(Event))/binary>>,
+    {ok, BinRes};
 
 %%--------------------------------------------------------------------
 %% @private
@@ -230,10 +233,13 @@ handle_event(["reg", Ch], WS) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_event(["unreg", Ch], WS) ->
-    MsgSpec = ?MSG{id=undefined, data=?MSG_DATA{channel=Ch}},
-    Res = west_protocol_handler:handle_event('west:unregister', MsgSpec, WS),
+    MsgSpec = ?MSG{id=undefined, channel=Ch},
+    Res = west_protocol_handler:handle_event(unregister, MsgSpec, WS),
     {_, ?MSG{event=Event}} = Res,
-    {ok, iolist_to_binary(Event)};
+    BinRes = <<(<<"west ">>)/binary,
+               (iolist_to_binary(Ch ++ ":"))/binary,
+               (iolist_to_binary(Event))/binary>>,
+    {ok, BinRes};
 
 %%--------------------------------------------------------------------
 %% @private
@@ -243,10 +249,13 @@ handle_event(["unreg", Ch], WS) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_event(["send", Ch, Msg], WS) ->
-    MsgSpec = ?MSG{id=undefined, data=?MSG_DATA{channel=Ch, body=Msg}},
-    Res = west_protocol_handler:handle_event('west:send', MsgSpec, WS),
+    MsgSpec = ?MSG{id=undefined, channel=Ch, data=Msg},
+    Res = west_protocol_handler:handle_event(send, MsgSpec, WS),
     {_, ?MSG{event=Event}} = Res,
-    {ok, iolist_to_binary(Event)};
+    BinRes = <<(<<"west ">>)/binary,
+               (iolist_to_binary(Ch ++ ":"))/binary,
+               (iolist_to_binary(Event))/binary>>,
+    {ok, BinRes};
 
 %%--------------------------------------------------------------------
 %% @private
@@ -256,10 +265,13 @@ handle_event(["send", Ch, Msg], WS) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_event(["pub", Ch, Msg], WS) ->
-    MsgSpec = ?MSG{id=undefined, data=?MSG_DATA{channel=Ch, body=Msg}},
-    Res = west_protocol_handler:handle_event('west:publish', MsgSpec, WS),
+    MsgSpec = ?MSG{id=undefined, channel=Ch, data=Msg},
+    Res = west_protocol_handler:handle_event(publish, MsgSpec, WS),
     {_, ?MSG{event=Event}} = Res,
-    {ok, iolist_to_binary(Event)};
+    BinRes = <<(<<"west ">>)/binary,
+               (iolist_to_binary(Ch ++ ":"))/binary,
+               (iolist_to_binary(Event))/binary>>,
+    {ok, BinRes};
 
 %%--------------------------------------------------------------------
 %% @private
@@ -269,10 +281,13 @@ handle_event(["pub", Ch, Msg], WS) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_event(["sub", Ch], WS) ->
-    MsgSpec = ?MSG{id=undefined, data=?MSG_DATA{channel=Ch}},
-    Res = west_protocol_handler:handle_event('west:subscribe', MsgSpec, WS),
+    MsgSpec = ?MSG{id=undefined, channel=Ch},
+    Res = west_protocol_handler:handle_event(subscribe, MsgSpec, WS),
     {_, ?MSG{event=Event}} = Res,
-    {ok, iolist_to_binary(Event)};
+    BinRes = <<(<<"west ">>)/binary,
+               (iolist_to_binary(Ch ++ ":"))/binary,
+               (iolist_to_binary(Event))/binary>>,
+    {ok, BinRes};
 
 %%--------------------------------------------------------------------
 %% @private
@@ -282,10 +297,13 @@ handle_event(["sub", Ch], WS) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_event(["unsub", Ch], WS) ->
-    MsgSpec = ?MSG{id=undefined, data=?MSG_DATA{channel=Ch}},
-    Res = west_protocol_handler:handle_event('west:unsubscribe', MsgSpec, WS),
+    MsgSpec = ?MSG{id=undefined, channel=Ch},
+    Res = west_protocol_handler:handle_event(unsubscribe, MsgSpec, WS),
     {_, ?MSG{event=Event}} = Res,
-    {ok, iolist_to_binary(Event)};
+    BinRes = <<(<<"west ">>)/binary,
+               (iolist_to_binary(Ch ++ ":"))/binary,
+               (iolist_to_binary(Event))/binary>>,
+    {ok, BinRes};
 
 handle_event(Any, _State) ->
     {none, Any}.
@@ -312,16 +330,6 @@ parse_msg(Msg) ->
 %%--------------------------------------------------------------------
 %% @private
 %% @doc
-%% Builds a custom message.
-%%
-%% @end
-%%--------------------------------------------------------------------
-build_msg(Text, Args) ->
-    lists:flatten(io_lib:format(Text, Args)).
-
-%%--------------------------------------------------------------------
-%% @private
-%% @doc
 %% Event callback. This function is executed when messages arrives.
 %%
 %% @end
@@ -333,5 +341,9 @@ ev_callback({ETag, Event, Msg}, [WSRef, _Id]) ->
                _ ->
                    Msg
            end,
-    Reply = build_msg("~s ~p:message_received ~p", [ETag, Event, Body]),
-    yaws_api:websocket_send(WSRef, {text, list_to_binary(Reply)}).
+    Reply = <<(iolist_to_binary(ETag))/binary,
+              (<<" ">>)/binary,
+              (atom_to_binary(Event, utf8))/binary,
+              (iolist_to_binary(":new_message "))/binary,
+              (iolist_to_binary(Body))/binary>>,
+    yaws_api:websocket_send(WSRef, {text, Reply}).

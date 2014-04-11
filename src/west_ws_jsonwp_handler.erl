@@ -136,8 +136,8 @@ handle_message({text, Msg}, #state{nb_texts=N}=State) ->
         {error, Reason} ->
             {reply, {text, Reason}, State#state{nb_texts=N+1}};
         ParsedMsg ->
-            WestEvent = binary_to_atom(ParsedMsg#msg_spec.event, utf8),
-            case west_protocol_handler:handle_event(WestEvent,
+            Cmd = binary_to_atom(ParsedMsg#msg_spec.command, utf8),
+            case west_protocol_handler:handle_event(Cmd,
                                                     ParsedMsg,
                                                     State#state.server) of
                 {ok, Response} ->
@@ -145,7 +145,7 @@ handle_message({text, Msg}, #state{nb_texts=N}=State) ->
                 {error, Err0} ->
                     {reply, {text, Err0}, State#state{nb_texts=N+1}};
                 _ ->
-                    ?MSG{id=Id, data=?MSG_DATA{channel=Ch}} = ParsedMsg,
+                    ?MSG{id=Id, channel=Ch} = ParsedMsg,
                     Err1 = ?RES_ACTION_NOT_ALLOWED(Id, Ch, "Invalid.", json),
                     {reply, {text, Err1}, State#state{nb_texts=N+1}}
             end
@@ -222,5 +222,5 @@ terminate(Reason, State) ->
 %% @end
 %%--------------------------------------------------------------------
 ev_callback({ETag, Event, Msg}, [WSRef, Id]) ->
-    Reply = ?RES_MSG_RECEIVED(Id, ETag, Event, Msg, json),
+    Reply = ?CH_NEW_MSG(Id, ETag, Event, Msg, json),
     yaws_api:websocket_send(WSRef, {text, Reply}).

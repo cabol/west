@@ -29,14 +29,10 @@
 -record(eh_cb_spec, {mod, func, args}).
 -define(CALLBACK_SPEC, #eh_cb_spec).
 
--record(msg_data_spec, {channel, channel_data, body}).
--define(MSG_DATA, #msg_data_spec).
-
--record(msg_spec, {id, from, event, data=?MSG_DATA{}}).
+-record(msg_spec, {id, from, command, event, channel, data}).
 -define(MSG, #msg_spec).
 
--define(MSG_FIELDS, [id, from, event, data]).
--define(MSG_DATA_FIELDS, [channel, channel_data, body]).
+-define(MSG_FIELDS, [id, from, command, event, channel, data]).
 
 -record(channel_spec, {name, type, user_id, date}).
 -define(CHANNEL, #channel_spec).

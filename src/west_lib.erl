@@ -75,14 +75,13 @@ reg(Scope, Ref, Key, CbSpec) ->
                                                   CbSpec,
                                                   [{monitors, [Ref]}]),
             register(Name, Pid),
-            Reply = case west_event_handler:reg(Name, Key) of
-                        {ok, _} ->
-                            {ok, registration_succeeded, Key};
-                        {error, _} ->
-                            west_event_handler:delete(Name),
-                            {error, registration_denied, Key}
-                    end,
-            Reply;
+            case west_event_handler:reg(Name, Key) of
+                {ok, _} ->
+                    {ok, registration_succeeded, Key};
+                {error, _} ->
+                    west_event_handler:delete(Name),
+                    {error, registration_denied, Key}
+            end;
         _ ->
             {error, registration_already_exist, Key}
     end.
@@ -142,13 +141,12 @@ unreg(Ref, Key) ->
 %% @end
 %%--------------------------------------------------------------------
 send(Scope, ETag, Key, Msg) ->
-    Reply = case ?SEND(Scope, ETag, Key, Msg) of
-                true ->
-                    {ok, sending_succeeded, Key};
-                _ ->
-                    {error, sending_failed, Key}
-            end,
-    Reply.
+    case ?SEND(Scope, ETag, Key, Msg) of
+        true ->
+            {ok, sending_succeeded, Key};
+        _ ->
+            {error, sending_failed, Key}
+    end.
 
 %%--------------------------------------------------------------------
 %% @spec sub(Scope, Ref, Event, CbSpec) -> Reply :: term()
@@ -183,14 +181,13 @@ sub(Scope, Ref, Event, CbSpec) ->
                                                   CbSpec,
                                                   [{monitors, [Ref]}]),
             register(Name, Pid),
-            Reply = case west_event_handler:subscribe(Name, Event) of
-                        {ok, _} ->
-                            {ok, subscription_succeeded, Event};
-                        {error, _} ->
-                            west_event_handler:delete(Name),
-                            {error, subscription_failed, Event}
-                    end,
-            Reply;
+            case west_event_handler:subscribe(Name, Event) of
+                {ok, _} ->
+                    {ok, subscription_succeeded, Event};
+                {error, _} ->
+                    west_event_handler:delete(Name),
+                    {error, subscription_failed, Event}
+            end;
         _ ->
             {error, subscription_already_exist, Event}
     end.
@@ -250,10 +247,9 @@ unsub(Ref, Event) ->
 %% @end
 %%--------------------------------------------------------------------
 pub(Scope, ETag, Event, Msg) ->
-    Reply = case ?PS_PUB(Scope, ETag, Event, Msg) of
-                true ->
-                    {ok, publication_succeeded, Event};
-                _ ->
-                    {error, publication_failed, Event}
-            end,
-    Reply.
+    case ?PS_PUB(Scope, ETag, Event, Msg) of
+        true ->
+            {ok, publication_succeeded, Event};
+        _ ->
+            {error, publication_failed, Event}
+    end.

@@ -108,12 +108,12 @@
                 </div>
 
                 <ul>
-                    <li>Register to a Channel: <code>{"from":"you", "event":"west:register", "data":{"channel":"your_new_channel"}}</code></li>
-                    <li>Unregister from a Channel: <code>{"from":"you", "event":"west:unregister", "data":{"channel":"your_new_channel"}}</code></li>
-                    <li>Send to a Channel: <code>{"from":"you", "event":"west:send", "data":{"channel":"your_new_channel", "body":"..your message.."}}</code></li>
-                    <li>Subscribe to a Channel: <code>{"from":"you", "event":"west:subscribe", "data":{"channel":"your_new_ps_channel"}}</code></li>
-                    <li>Unsubscribe from a Channel: <code>{"from":"you", "event":"west:unsubscribe", "data":{"channel":"your_new_ps_channel"}}</code></li>
-                    <li>Publish to a Channel: <code>{"from":"you", "event":"west:publish", "data":{"channel":"your_new_ps_channel", "body":"..your message.."}}</code></li>
+                    <li>Register to a Channel: <code>{"command":"register", "channel":"channel_name"}</code></li>
+                    <li>Unregister from a Channel: <code>{"command":"unregister", "channel":"channel_name"}</code></li>
+                    <li>Send to a Channel: <code>{"command":"send", "channel":"channel_name", "data":"..your message.."}</code></li>
+                    <li>Subscribe to a Channel: <code>{"command":"subscribe", "channel":"channel_name"}</code></li>
+                    <li>Unsubscribe from a Channel: <code>{"command":"unsubscribe", "channel":"channel_name"}</code></li>
+                    <li>Publish to a Channel: <code>{"command":"publish", "channel":"channel_name", "data":"..your message.."}</code></li>
                 </ul>
 
                 <form class="form-inline" id="options">
