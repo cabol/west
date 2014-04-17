@@ -1,23 +1,32 @@
-<html xmlns="http://www.w3.org/1999/html">
+<!DOCTYPE html>
+<html lang="en">
     <head>
-        <title>>Web Event-Driven System's Tool</title>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="">
 
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <!-- Bootstrap -->
-        <link href="./bootstrap/css/bootstrap.css" rel="stylesheet">
+        <title>WEST</title>
+
+        <!-- Bootstrap core CSS -->
         <link href="./bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
         <!-- Custom styles for this template -->
-        <link href="./css/my_theme.css" rel="stylesheet">
+        <link href="./css/justified-nav.css" rel="stylesheet">
 
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
     </head>
 
     <body>
 
-        <!-- Wrap all page content here -->
-        <div id="wrap">
+        <div class="container">
 
-            <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
                 <div class="container">
                     <!--<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
                         <span class="icon-bar"></span>
@@ -35,51 +44,41 @@
                 </div>
             </div>
 
-            <div class="container">
+            <!-- Jumbotron -->
+            <div class="jumbotron">
+                <h1>Web-Event-driven System's Tool</h1>
+                <p class="lead">A new way to build real-time and high scalable messaging-based applications, not centralized but distributed!</p>
+                <p><a class="btn btn-lg btn-success" href="https://github.com/cabolanos/west" role="button">Source Code</a></p>
+            </div>
 
-                <div class="page-header">
-                    <h1>Web Event-Driven System's Tool</h1>
+            <!-- Example row of columns -->
+            <div class="row">
+                <div class="col-lg-4">
+                    <h2>JSON Wire Protocol</h2>
+                    <p>JSON is widely used in web-based applications as application level protocol,
+                        also  used to define public APIs. Is supported by all programming languages.
+                        Recommended strongly for browser-based clients.</p>
+                    <p><a class="btn btn-primary" href="./int/jsonwp.html" role="button">Get started &raquo;</a></p>
                 </div>
-
-                <form class="form-inline" id="options">
-                    <div>
-                        <a href="./int/jsonwp.html">JSON Wire Protocol <span class="label label-default">Recommended</span></a>
-                    </div>
-                    <br/>
-                    <div>
-                        <a href="./int/textwp.html">Text Wire Protocol</a>
-                    </div>
-                    <div>
-                        <a href="./int/protobuffs.html">Protocol Buffers</a>
-                    </div>
-                </form>
-
-                <!-- START THE FEATURETTES -->
-
-                <hr class="featurette-divider">
-
-                <div class="row featurette">
-                    <div class="col-md-7">
-                        <h3 class="featurette-heading">Publish/Subscribe Example. <span class="text-muted">JSON Wire Protocol.</span></h3>
-                        <p class="lead">This example shows a simple pub/sub scenario. First, you subscribe to a channel, and then you can receive events from other applications.</p>
-                    </div>
-                    <div class="col-md-5">
-                        <img class="featurette-image img-responsive" src="./img/pub_sub_ex_dist.png" data-src="holder.js/500x500/auto" alt="Generic placeholder image">
-                    </div>
-                    <!--<a class="pull-right" href="#">
-                        <img class="media-object" src="./img/pub_sub_ex.png" alt="Pub/Sub Example" width="304" height="228">
-                    </a>-->
+                <div class="col-lg-4">
+                    <h2>Protocol Buffers</h2>
+                    <p>Highly recommended for performance-critical scenarios. PB produces quite
+                        compact data (small output), and provides very fast processing reducing
+                        significantly the CPU overhead.</p>
+                    <p><a class="btn btn-primary" href="./int/protobuffs.html" role="button">Get started &raquo;</a></p>
                 </div>
+                <div class="col-lg-4">
+                    <h2>Text Wire Protocol</h2>
+                    <p>Just for testing purposes.</p>
+                    <p><a class="btn btn-primary" href="./int/textwp.html" role="button">Get started &raquo;</a></p>
+                </div>
+            </div>
 
-                <hr class="featurette-divider">
-
-            </div><!-- /.container -->
-
-        </div>
+        </div> <!-- /container -->
 
         <div id="footer">
             <div class="container">
-                <p class="text-muted credit">Example courtesy <a href="http://cabolanos.blogspot.com">Carlos Andres Bola&ntilde;os R.A.</a></p>
+                <p class="text-muted credit">&copy; <a href="http://cabolanos.blogspot.com">Carlos Andres Bola&ntilde;os R.A. 2014</a></p>
             </div>
         </div>
 
@@ -87,8 +86,5 @@
         <!-- Bootstrap core JavaScript
         ================================================== -->
         <!-- Placed at the end of the document so the pages load faster -->
-        <script src="./assets/js/jquery.js"></script>
-        <script src="./bootstrap/js/bootstrap.min.js"></script>
-
     </body>
 </html>
