@@ -15,9 +15,10 @@ Overview
 messaging-based systems, giving properties such as: massive concurrency, fault-tolerance, high scalability,
 high performance, and high availability.
 
-`WEST` is written in `Erlang/OTP`, enables messaging patterns like Pub/Sub and Request/Reply, and also comes with a
-WebSocket API with a JSON-based or Text-based protocol in order to interact with it. `WEST` breaks the traditional
-centralized model of MoM (Message-Oriented Middleware), implementing a real P2P communication system.
+`WEST` is written in `Erlang/OTP`, enables messaging patterns like Pub/Sub and Request/Reply. Also comes with a
+WebSockets API and different protocols options such as: JSON, Text and Protocol Buffers, in order to interact with it.
+`WEST` breaks the traditional messaging systems with centralized model (Broker, ESB, MoM, etc.), implementing a real
+P2P communication system.
 
 
 
@@ -36,7 +37,7 @@ WEST uses some project as support infrastructure.
 Building WEST
 -------------
 
-Assuming you have a working Erlang (R15B02 or later) installation, building WEST should be as simple as:
+Assuming you have a working Erlang (R16B02 or later) installation, building WEST should be as simple as:
 
         $ git clone https://github.com/cabolanos/west.git
         $ cd west
@@ -148,11 +149,11 @@ Is possible interact with `west` in programmatic way with Erlang using the modul
     {ok,<0.426.0>}
     (west@127.0.0.1)4> west_client:reg(Pid, "r1").
     {ok,{msg_spec,undefined,"west",
-                  "west:registration_succeeded",
+                  "registration_succeeded",
                   {msg_data_spec,"r1",undefined,"Reg ok."}}}
     (west@127.0.0.1)5> west_client:reg(Pid2, "r2").
     {ok,{msg_spec,undefined,"west",
-                  "west:registration_succeeded",
+                  "registration_succeeded",
                   {msg_data_spec,"r2",undefined,"Reg ok."}}}
     (west@127.0.0.1)6>
 
@@ -163,13 +164,13 @@ So far, we've created two clients to `west`, and one is registered to channel `r
     (west@127.0.0.1)6> west_client:send(Pid, "r2", "hello!").
     Event: {"u1",r2,"hello!"}
     Args: ["Hello"]
-    {ok,{msg_spec,undefined,"west","west:sending_succeeded",
+    {ok,{msg_spec,undefined,"west","sending_succeeded",
                   {msg_data_spec,"r2",undefined,"Message sent."}}}
     (west@127.0.0.1)7>
     (west@127.0.0.1)7> west_client:send(Pid2, "r1", "hello!").
     Event: {"u2",r1,"hello!"}
     Args: ["Hello"]
-    {ok,{msg_spec,undefined,"west","west:sending_succeeded",
+    {ok,{msg_spec,undefined,"west","sending_succeeded",
                   {msg_data_spec,"r1",undefined,"Message sent."}}}
     (west@127.0.0.1)8>
 
@@ -179,11 +180,11 @@ and after we'll publish a message.
     (west@127.0.0.1)8>
     (west@127.0.0.1)8> west_client:sub(Pid, "ps1").
     {ok,{msg_spec,undefined,"west",
-                  "west:subscription_succeeded",
+                  "subscription_succeeded",
                   {msg_data_spec,"ps1",undefined,"Subscription ok."}}}
     (west@127.0.0.1)9> west_client:sub(Pid2, "ps1").
     {ok,{msg_spec,undefined,"west",
-                  "west:subscription_succeeded",
+                  "subscription_succeeded",
                   {msg_data_spec,"ps1",undefined,"Subscription ok."}}}
     (west@127.0.0.1)10>
     (west@127.0.0.1)10> west_client:pub(Pid, "ps1", "All").
@@ -191,7 +192,7 @@ and after we'll publish a message.
     Args: ["Hello"]
     Event: {"u1",ps1,"All"}
     Args: ["Hello"]
-    {ok,{msg_spec,undefined,"west","west:publication_succeeded",
+    {ok,{msg_spec,undefined,"west","publication_succeeded",
                   {msg_data_spec,"ps1",undefined,"Message published."}}}
     (west@127.0.0.1)11>
 

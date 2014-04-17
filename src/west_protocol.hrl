@@ -28,14 +28,16 @@
 
 -define(EVENTS, [{0, connection_established},
                  {1, internal_error},
-                 {2, new_message},
-                 {3, action_not_allowed},
-                 {4, channel_not_found},
-                 {5, channel_creation_succeeded},
-                 {6, channel_already_exist},
-                 {7, channel_creation_failed},
-                 {8, channel_delete_succeeded},
-                 {9, channel_delete_failed},
+                 {2, bad_request},
+                 {3, timeout},
+                 {4, action_not_allowed},
+                 {5, new_message},
+                 {6, channel_not_found},
+                 {7, channel_creation_succeeded},
+                 {8, channel_already_exist},
+                 {9, channel_creation_failed},
+                 {10, channel_delete_succeeded},
+                 {11, channel_delete_failed},
                  {100, registration_succeeded},
                  {101, registration_failed},
                  {102, registration_already_exist},
@@ -54,21 +56,25 @@
                  {600, publication_succeeded},
                  {601, publication_failed}]).
 
--define(RES_CONN_ESTABLISHED(C, B, F),
+-define(RES_CONN_ESTABLISHED(F),
     west_msg_utils:build_msg(
-        undefined, "west", "connection_established", C, B, F)).
+        undefined, "west", "connection_established", undefined, undefined, F)).
 
--define(RES_INTERNAL_ERROR(Id, C, B, F),
+-define(RES_INTERNAL_ERROR(Id, F),
     west_msg_utils:build_msg(
-        Id, "west", "internal_error", C, B, F)).
+        Id, "west", "internal_error", undefined, undefined, F)).
 
--define(CH_NEW_MSG(Id, ET, C, B, F),
+-define(RES_BAD_REQUEST(F),
+    west_msg_utils:build_msg(
+        undefined, "west", "bad_request", undefined, undefined, F)).
+
+-define(RES_ACTION_NOT_ALLOWED(Id, C, F),
+    west_msg_utils:build_msg(
+        Id, "west", "action_not_allowed", C, undefined, F)).
+
+-define(RES_CH_NEW_MSG(Id, ET, C, B, F),
     west_msg_utils:build_msg(
         Id, ET, "new_message", C, B, F)).
-
--define(RES_ACTION_NOT_ALLOWED(Id, C, B, F),
-    west_msg_utils:build_msg(
-        Id, "west", "action_not_allowed", C, B, F)).
 
 -define(RES_CH_NOT_FOUND(Id, C, B, F),
     west_msg_utils:build_msg(

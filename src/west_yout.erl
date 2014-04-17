@@ -50,7 +50,8 @@ out(A) ->
     %% 'extversion=true' in the query string.
     CallbackMod = case yaws_api:queryvar(A, "protocol") of
                       {ok, "text"} -> west_ws_textwp_handler;
-                      _            -> west_ws_jsonwp_handler
+                      {ok, "json"} -> west_ws_jsonwp_handler;
+                      _            -> west_ws_pb_handler
                   end,
 
     %% To enable keepalive timer add 'keepalive=true' in the query string.

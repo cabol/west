@@ -71,11 +71,6 @@
                 }
             };
         </script>
-
-        <!--<style type="text/css">
-            div.hidden { display: none; }
-            #msgs { margin-left: 20px; width: 1160px; }
-        </style>-->
     </head>
 
     <body>
@@ -85,19 +80,7 @@
 
             <div class="navbar navbar-inverse navbar-fixed-top">
                 <div class="container">
-                    <!--<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>-->
                     <a class="navbar-brand" href="https://github.com/cabolanos/eventerl.git">WEST</a>
-                    <!--<div class="nav-collapse collapse">
-                        <ul class="nav navbar-nav">
-                            <li class="active"><a href="#">Home</a></li>
-                            <li><a href="#about">About</a></li>
-                            <li><a href="#contact">Contact</a></li>
-                        </ul>
-                    </div>--><!--/.nav-collapse -->
                 </div>
             </div>
 
@@ -108,12 +91,12 @@
                 </div>
 
                 <ul>
-                    <li>Register to a Channel: <code>{"command":"register", "channel":"channel_name"}</code></li>
-                    <li>Unregister from a Channel: <code>{"command":"unregister", "channel":"channel_name"}</code></li>
-                    <li>Send to a Channel: <code>{"command":"send", "channel":"channel_name", "data":"..your message.."}</code></li>
-                    <li>Subscribe to a Channel: <code>{"command":"subscribe", "channel":"channel_name"}</code></li>
-                    <li>Unsubscribe from a Channel: <code>{"command":"unsubscribe", "channel":"channel_name"}</code></li>
-                    <li>Publish to a Channel: <code>{"command":"publish", "channel":"channel_name", "data":"..your message.."}</code></li>
+                    <li>Register to a Channel: <code>{"event":"register", "channel":"channel_name"}</code></li>
+                    <li>Unregister from a Channel: <code>{"event":"unregister", "channel":"channel_name"}</code></li>
+                    <li>Send to a Channel: <code>{"event":"send", "channel":"channel_name", "data":"..your message.."}</code></li>
+                    <li>Subscribe to a Channel: <code>{"event":"subscribe", "channel":"channel_name"}</code></li>
+                    <li>Unsubscribe from a Channel: <code>{"event":"unsubscribe", "channel":"channel_name"}</code></li>
+                    <li>Publish to a Channel: <code>{"event":"publish", "channel":"channel_name", "data":"..your message.."}</code></li>
                 </ul>
 
                 <form class="form-inline" id="options">
@@ -186,7 +169,7 @@
         <!-- Bootstrap core JavaScript
         ================================================== -->
         <!-- Placed at the end of the document so the pages load faster -->
-        <script src="./assets/js/jquery.js"></script>
-        <script src="./bootstrap/js/bootstrap.min.js"></script>
+        <!--<script src="./assets/js/jquery.js"></script>
+        <script src="./bootstrap/js/bootstrap.min.js"></script>-->
     </body>
 </html>

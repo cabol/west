@@ -1,0 +1,217 @@
+<html xmlns="http://www.w3.org/1999/html">
+    <head>
+        <title>Protocol Buffers</title>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- Bootstrap -->
+        <link href="../bootstrap/css/bootstrap.css" rel="stylesheet">
+        <link href="../bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- Custom styles for this template -->
+        <link href="../css/my_theme.css" rel="stylesheet">
+
+        <script src="../assets/js/Long.min.js"></script>
+        <script src="../assets/js/ByteBuffer.min.js"></script>
+        <script src="../assets/js/ProtoBuf.min.js"></script>
+
+        <script type="text/javascript">
+            if (typeof dcodeIO === 'undefined' || !dcodeIO.ProtoBuf) {
+                throw(new Error("ProtoBuf.js is not present. Please see www/index.html for manual setup instructions."));
+            }
+            // Initialize ProtoBuf.js
+            var ProtoBuf = dcodeIO.ProtoBuf;
+            var Builder = ProtoBuf.loadProtoFile("../assets/files/west_msg.proto");
+            var WestMsg = ProtoBuf.loadProtoFile("../assets/files/west_msg.proto").build("WestMsg");
+
+            if (!window.WebSocket)
+                alert("WebSocket not supported by this browser");
+
+            // Get an Element
+            function $() { return document.getElementById(arguments[0]); }
+            // Get the value of an Element
+            function $F() { return document.getElementById(arguments[0]).value; }
+
+            var client = {
+                connect: function() {
+                    var baseUri =
+                        "ws://" + $('wsHostPort').value + "/west/" + $('userId').value;
+                    this._ws = new WebSocket(baseUri +
+                        "?protocol=" + "pb" +
+                        "&keepalive=" + $('keepalive').checked +
+                        "&timeout=" + $('timeout').value);
+                    this._ws.onopen = this._onopen;
+                    this._ws.onmessage = this._onmessage;
+                    this._ws.onclose = this._onclose;
+                    $('msgs').innerHTML = '';
+                    this._ws.binaryType = "arraybuffer"; // We are talking binary
+                },
+                _onopen: function() {
+                    $('options').className = 'hidden';
+                    $('conn').className = 'hidden';
+                    $('connected').className = '';
+                    //$('phrase').focus();
+                    //client._send('client-connected');
+                },
+                _send: function() {
+                    if (this._ws) {
+                        var msg = new WestMsg($('inputEvent').value,
+                                              $('inputChannel').value,
+                                              "",
+                                              $('inputId').value,
+                                              $('inputData').value);
+                        this._ws.send(msg.toArrayBuffer());
+                    }
+                },
+                chat: function() {
+                    client._send();
+                },
+                _onmessage: function(m) {
+                    if (m.data){
+                        var decmsg = WestMsg.decode(m.data);
+                        var text = "{event: " + decmsg.event;
+                        if (decmsg.channel)
+                            text = text + ", channel: " + decmsg.channel;
+                        if (decmsg.from)
+                            text = text + ", from: " + decmsg.from;
+                        if (decmsg.id)
+                            text = text + ", id: " + decmsg.id;
+                        if (decmsg.data)
+                            text = text + ", data: " + decmsg.data.toString("binary");
+                        text = text + "}"
+
+                        var msg = $('msgs');
+                        var spanText = document.createElement('span');
+                        spanText.className = 'text';
+                        spanText.innerHTML = text;
+                        var lineBreak = document.createElement('br');
+                        msg.appendChild(spanText);
+                        msg.appendChild(lineBreak);
+                        msg.scrollTop = msg.scrollHeight - msg.clientHeight;
+                    }
+                },
+                _onclose: function(m) {
+                    this._ws = null;
+                    $('connected').className = 'hidden';
+                    $('options').className = '';
+                    $('conn').className = '';
+                    document.location.reload();
+                }
+            };
+        </script>
+    </head>
+
+    <body>
+
+    <!-- Wrap all page content here -->
+    <div id="wrap">
+
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <a class="navbar-brand" href="www.niagarasystems.co">WEST</a>
+            </div>
+        </div>
+
+        <div class="container">
+
+            <div class="page-header">
+                <h2>Protocol Buffers</h2>
+            </div>
+
+
+            <form class="form-inline" id="options">
+                <div class="page-header">
+                    <h3>Connection Parameters</h3>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input id="keepalive" type="checkbox"> Enable keepalive timer
+                    </label>
+                </div>
+                <div class="form-group">
+                    <input id="timeout" type="text" class="form-control" placeholder="Timeout (ms)">
+                </div>
+            </form>
+
+            </br>
+
+            <form class="form-inline" role="form" id="conn">
+                <div class="form-group">
+                    <input type="text" class="form-control" id="userId" placeholder="Username">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="wsHostPort" placeholder="Host[:Port] (ex.: localhost:8888)">
+                </div>
+                <button id="cA" class="btn btn-default btn-primary" type="submit" name="connect">Connect</button>
+            </form>
+
+            <div id="connected" class="hidden">
+
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <label for="inputEvent" class="col-sm-1 control-label">Event</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="inputEvent" placeholder="event">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputChannel" class="col-sm-1 control-label">Channel</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="inputChannel" placeholder="channel name">
+                        </div>
+                    </div>
+                    <!--<div class="form-group">
+                        <label for="inputFrom" class="col-sm-1 control-label">From</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="inputFrom" placeholder="from">
+                        </div>
+                    </div>-->
+                    <div class="form-group">
+                        <label for="inputId" class="col-sm-1 control-label">Id</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="inputId" placeholder="id">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputData" class="col-sm-1 control-label">Data</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="inputData" placeholder="data">
+                        </div>
+                    </div>
+
+                    <button id="sendB" type="submit" class="btn btn-primary">Send</button>
+                </form>
+
+                </br>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Event Log</h3>
+                            </div>
+                            <div id="msgs" class="panel-body">
+                                Panel content
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div><!-- /.container -->
+
+    </div>
+
+    <div id="footer">
+        <div class="container">
+            <p class="text-muted credit">Example courtesy <a href="http://cabolanos.blogspot.com">Carlos Andres Bola&ntilde;os R.A.</a></p>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $('cA').onclick = function(event) { client.connect(); return false; };
+        $('sendB').onclick = function(event) { client.chat(); return false; };
+    </script>
+
+    </body>
+</html>

@@ -121,9 +121,9 @@ handle_message({text, <<"bye">>}, #state{nb_texts=N, nb_bins=M}=State) ->
 
 %%--------------------------------------------------------------------
 %% @doc
-%% This function is called when a message is received. {text, Data}
-%% (or {binary, Data}) is the unfragmented text (or binary) message.
-%% Currently, this function receives the events.
+%% This function is called when a text message is received.
+%% {text, Data} is the unfragmented binary message.
+%% SUPPORTED by this handler.
 %%
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
 %%
@@ -148,9 +148,9 @@ handle_message({text, Msg}, #state{nb_texts=N}=State) ->
 
 %%--------------------------------------------------------------------
 %% @doc
-%% This function is called when a message is received. {text, Data}
-%% (or {binary, Data}) is the unfragmented text (or binary) message.
-%% Currently unhandled.
+%% This function is called when a binary message is received.
+%% {binary, Data} is the unfragmented binary message.
+%% NOT SUPPORTED by this handler.
 %%
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
 %%
@@ -158,7 +158,7 @@ handle_message({text, Msg}, #state{nb_texts=N}=State) ->
 %%--------------------------------------------------------------------
 handle_message({binary, Msg}, #state{nb_bins=M}=State) ->
     ?LOG_INFO("Received binary msg (M=~p): ~p bytes~n", [M, byte_size(Msg)]),
-    {reply, {binary, Msg}, State#state{nb_bins=M+1}};
+    {reply, {binary, <<"Bad encoding.">>}, State#state{nb_bins=M+1}};
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -326,6 +326,10 @@ parse_msg(Msg) ->
         [C]    -> string:tokens(C, " ");
         _      -> none
     end.
+
+%%%===================================================================
+%%% Callback
+%%%===================================================================
 
 %%--------------------------------------------------------------------
 %% @private

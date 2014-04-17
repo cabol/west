@@ -28,7 +28,7 @@
 -module(west_msg_utils).
 
 %% API
--export([parse_msg/1, format_msg/1, build_msg/6, build_msg/7]).
+-export([parse_msg/1, format_msg/1, build_msg/6]).
 
 -include("west.hrl").
 -include("west_int.hrl").
@@ -52,18 +52,12 @@ parse_msg(Json) ->
             {error, <<"Invalid JSON, error at decode.">>};
         {struct, DecJson} ->
             try
-                Id = proplists:get_value(<<"id">>, DecJson),
-                From = proplists:get_value(<<"from">>, DecJson),
-                Cmd = proplists:get_value(<<"command">>, DecJson),
                 Event = proplists:get_value(<<"event">>, DecJson),
                 Ch = proplists:get_value(<<"channel">>, DecJson),
+                From = proplists:get_value(<<"from">>, DecJson),
+                Id = proplists:get_value(<<"id">>, DecJson),
                 Data = proplists:get_value(<<"data">>, DecJson),
-                ?MSG{id=Id,
-                     from=From,
-                     command=Cmd,
-                     event=Event,
-                     channel=Ch,
-                     data=Data}
+                ?MSG{event=Event, channel=Ch, from=From, id=Id, data=Data}
             catch
                 _:_ -> {error, <<"Parsing error.">>}
             end
@@ -79,13 +73,8 @@ parse_msg(Json) ->
 %% @end
 %%--------------------------------------------------------------------
 format_msg(Msg) ->
-    ?MSG{id=Id, from=From, command=Cmd, event=Ev, channel=Ch, data=Data} = Msg,
-    L0 = [{id, Id},
-          {from, From},
-          {command, Cmd},
-          {event, Ev},
-          {channel, Ch},
-          {data, Data}],
+    ?MSG{event=Ev, channel=Ch, from=From, id=Id, data=Data} = Msg,
+    L0 = [{event, Ev}, {channel, Ch}, {from, From}, {id, Id}, {data, Data}],
     F = fun(X) when is_atom(X) -> atom_to_binary(X, utf8);
            (X) when is_list(X) orelse is_binary(X) -> iolist_to_binary(X);
            (X) -> iolist_to_binary(lists:flatten(io_lib:format("~p", [X])))
@@ -100,22 +89,9 @@ format_msg(Msg) ->
 %% @spec build_msg(Id, From, Event, Channel, Data, Format) ->
 %%                 Reply :: binary()
 %%
-%% @doc
-%% Call build_msg/7 with Cmd = undefined.
-%%
-%% @end
-%%--------------------------------------------------------------------
-build_msg(Id, From, Event, Channel, Data, Format) ->
-    build_msg(Id, From, undefined, Event, Channel, Data, Format).
-
-%%--------------------------------------------------------------------
-%% @spec build_msg(Id, From, Cmd, Event, Channel, Data, Format) ->
-%%                 Reply :: binary()
-%%
 %% Types:
 %%    Id = iolist() | undefined
 %%    From = iolist() | undefined
-%%    Cmd = iolist() | undefined
 %%    Event = iolist() | undefined
 %%    Channel = iolist() | undefined
 %%    Data = iolist() | undefined
@@ -127,13 +103,8 @@ build_msg(Id, From, Event, Channel, Data, Format) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
-build_msg(Id, From, Cmd, Event, Channel, Data, Format) ->
-    Msg = ?MSG{id=Id,
-               from=From,
-               command=Cmd,
-               event=Event,
-               channel=Channel,
-               data=Data},
+build_msg(Id, From, Event, Channel, Data, Format) ->
+    Msg = ?MSG{event=Event, channel=Channel, from=From, id=Id, data=Data},
     case Format of
         json ->
             case format_msg(Msg) of

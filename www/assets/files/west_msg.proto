@@ -1,0 +1,9 @@
+
+// WEST message specification
+message WestMsg {
+    required string event = 1;
+    optional string channel = 2;
+    optional string from = 3;
+    optional string id = 4;
+    optional bytes data = 5;
+}

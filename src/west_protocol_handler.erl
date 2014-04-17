@@ -54,7 +54,7 @@ handle_event(register,
             Val = {west_lib, reg, [Sc, {Name, node()}, Ev, Cbk]},
             case execute(WS, Ch, Ch, Val) of
                 {error, _} ->
-                    {error, ?RES_INTERNAL_ERROR(Id, Ch, "Internal error.", F)};
+                    {error, ?RES_INTERNAL_ERROR(Id, F)};
                 {_, registration_succeeded, _} ->
                     {ok, ?RES_REG_OK(Id, Ch, "Reg ok.", F)};
                 {_, registration_denied, _} ->
@@ -84,7 +84,7 @@ handle_event(unregister,
             Val = {west_lib, unreg, [{Name, node()}, Ev]},
             case execute(WS, Ch, Ch, Val) of
                 {error, _} ->
-                    {error, ?RES_INTERNAL_ERROR(Id, Ch, "Internal error.", F)};
+                    {error, ?RES_INTERNAL_ERROR(Id, F)};
                 {_, unregistration_succeeded, _} ->
                     {ok, ?RES_UNREG_OK(Id, Ch, "Unreg ok.", F)};
                 {_, registration_not_found, _} ->
@@ -112,7 +112,7 @@ handle_event(send,
             Val = {west_lib, send, [Scope, K, Ev, Data]},
             case execute(WS, Ch, Ch, Val) of
                 {error, _} ->
-                    {error, ?RES_INTERNAL_ERROR(Id, Ch, "Internal error.", F)};
+                    {error, ?RES_INTERNAL_ERROR(Id, F)};
                 {_, sending_succeeded, _} ->
                     {ok, ?RES_SEND_OK(Id, Ch, "Message sent.", F)};
                 {_, sending_failed, _} ->
@@ -164,7 +164,7 @@ handle_event(subscribe,
             Val = {west_lib, sub, [Sc, {Name, node()}, Ev, Cbk]},
             case execute(WS, K, Ch, Val) of
                 {error, _} ->
-                    {error, ?RES_INTERNAL_ERROR(Id, Ch, "Internal error.", F)};
+                    {error, ?RES_INTERNAL_ERROR(Id, F)};
                 {_, subscription_succeeded, _} ->
                     {ok, ?RES_SUB_OK(Id, Ch, "Subscription ok.", F)};
                 {_, subscription_failed, _} ->
@@ -194,7 +194,7 @@ handle_event(unsubscribe,
             Val = {west_lib, unsub, [{Name, node()}, Ev]},
             case execute(WS, K, Ch, Val) of
                 {error, _} ->
-                    {error, ?RES_INTERNAL_ERROR(Id, Ch, "Internal error.", F)};
+                    {error, ?RES_INTERNAL_ERROR(Id, F)};
                 {_, unsubscription_succeeded, _} ->
                     {ok, ?RES_UNSUB_OK(Id, Ch, "Unsub ok.", F)};
                 {_, subscription_not_found, _} ->
