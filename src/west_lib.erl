@@ -134,7 +134,7 @@ unreg(Ref, Key) ->
 %% registration doesn't exist, send will fail.
 %%
 %% Scope: Gproc scope
-%% ETag: ID for the sent event.
+%% ETag: ID of the sender.
 %% Key: Key which the GS was registered.
 %% Msg: Message that will send.
 %%
@@ -240,7 +240,7 @@ unsub(Ref, Event) ->
 %% subscribed GS. If subscription doesn't exist, publish will fail.
 %%
 %% Scope: Gproc scope
-%% ETag: ID for the sent event.
+%% ETag: ID of the sender.
 %% Event: Event which the GS was registered.
 %% Msg: Message that will send.
 %%

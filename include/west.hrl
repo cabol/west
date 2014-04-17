@@ -29,10 +29,10 @@
 -record(eh_cb_spec, {mod, func, args}).
 -define(CALLBACK_SPEC, #eh_cb_spec).
 
--record(msg_spec, {id, from, command, event, channel, data}).
--define(MSG, #msg_spec).
+-record(westmsg, {event, channel, from, id, data}).
+-define(MSG, #westmsg).
 
--define(MSG_FIELDS, [id, from, command, event, channel, data]).
+-define(MSG_FIELDS, [event, channel, from, id, data]).
 
 -record(channel_spec, {name, type, user_id, date}).
 -define(CHANNEL, #channel_spec).
@@ -59,6 +59,10 @@
 
 -define(LOG_INFO(Format, Vars),
     error_logger:info_msg(Format, Vars)).
+-define(LOG_ERROR(Format, Vars),
+    error_logger:error_msg(Format, Vars)).
+-define(LOG_WARNING(Format, Vars),
+    error_logger:warning_msg(Format, Vars)).
 
 -define(N, 3).
 -define(R, 2).
