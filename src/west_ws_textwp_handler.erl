@@ -121,6 +121,19 @@ handle_message({text, <<"bye">>}, #state{nb_texts=N, nb_bins=M}=State) ->
 
 %%--------------------------------------------------------------------
 %% @doc
+%% This function is called when a message <<"ping">> ({text, Data}) is
+%% received.
+%%
+%% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
+%%
+%% @end
+%%--------------------------------------------------------------------
+handle_message({text, <<"ping">>}, #state{nb_texts=N}=State) ->
+    ?LOG_INFO("Received text msg (N=~p): 4 bytes~n", [N]),
+    {reply, {text, <<"west pong">>}, State#state{nb_texts=N+1}};
+
+%%--------------------------------------------------------------------
+%% @doc
 %% This function is called when a text message is received.
 %% {text, Data} is the unfragmented binary message.
 %% SUPPORTED by this handler.

@@ -26,18 +26,28 @@
 %%% Created : 06. Oct 2013 8:45 AM
 %%%-------------------------------------------------------------------
 
+
+-define(COMMANDS, [{0, ping},
+                   {1, register},
+                   {2, unregister},
+                   {3, send},
+                   {4, subscribe},
+                   {5, unsubscribe},
+                   {6, publish}]).
+
 -define(EVENTS, [{0, connection_established},
-                 {1, internal_error},
-                 {2, bad_request},
-                 {3, timeout},
-                 {4, action_not_allowed},
-                 {5, new_message},
-                 {6, channel_not_found},
-                 {7, channel_creation_succeeded},
-                 {8, channel_already_exist},
-                 {9, channel_creation_failed},
-                 {10, channel_delete_succeeded},
-                 {11, channel_delete_failed},
+                 {1, pong},
+                 {2, internal_error},
+                 {3, bad_request},
+                 {4, timeout},
+                 {5, action_not_allowed},
+                 {6, new_message},
+                 {7, channel_not_found},
+                 {8, channel_creation_succeeded},
+                 {9, channel_already_exist},
+                 {10, channel_creation_failed},
+                 {11, channel_delete_succeeded},
+                 {12, channel_delete_failed},
                  {100, registration_succeeded},
                  {101, registration_failed},
                  {102, registration_already_exist},
@@ -59,6 +69,10 @@
 -define(RES_CONN_ESTABLISHED(F),
     west_msg_utils:build_msg(
         undefined, "west", "connection_established", undefined, undefined, F)).
+
+-define(RES_PONG(Id, F),
+    west_msg_utils:build_msg(
+        Id, "west", "pong", undefined, undefined, F)).
 
 -define(RES_INTERNAL_ERROR(Id, F),
     west_msg_utils:build_msg(
