@@ -140,8 +140,8 @@ handle_message({text, Msg},
             {reply, {text, Reason}, State#state{nb_texts=N+1}};
         ParsedMsg ->
             ?LOG_INFO("[~p] ~p ~p~n",
-                      [K, ParsedMsg#westmsg.event, ParsedMsg#westmsg.channel]),
-            Cmd = binary_to_atom(ParsedMsg#westmsg.event, utf8),
+                      [K, ParsedMsg#message.event, ParsedMsg#message.channel]),
+            Cmd = binary_to_atom(ParsedMsg#message.event, utf8),
             case west_protocol_handler:handle_event(Cmd,
                                                     ParsedMsg,
                                                     State#state.server) of

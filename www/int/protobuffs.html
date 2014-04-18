@@ -1,10 +1,14 @@
 <html xmlns="http://www.w3.org/1999/html">
     <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
         <title>Protocol Buffers</title>
 
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <!-- Bootstrap -->
-        <link href="../bootstrap/css/bootstrap.css" rel="stylesheet">
         <link href="../bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
         <!-- Custom styles for this template -->
@@ -21,7 +25,7 @@
             // Initialize ProtoBuf.js
             var ProtoBuf = dcodeIO.ProtoBuf;
             var Builder = ProtoBuf.loadProtoFile("../assets/files/west_msg.proto");
-            var WestMsg = ProtoBuf.loadProtoFile("../assets/files/west_msg.proto").build("WestMsg");
+            var WestMsg = ProtoBuf.loadProtoFile("../assets/files/west_msg.proto").build("Message");
 
             if (!window.WebSocket)
                 alert("WebSocket not supported by this browser");
@@ -102,116 +106,115 @@
 
     <body>
 
-    <!-- Wrap all page content here -->
-    <div id="wrap">
+        <!-- Wrap all page content here -->
+        <div id="wrap">
 
-        <div class="navbar navbar-inverse navbar-fixed-top">
             <div class="container">
-                <a class="navbar-brand" href="www.niagarasystems.co">WEST</a>
-            </div>
-        </div>
 
-        <div class="container">
+                <div class="navbar navbar-inverse navbar-fixed-top">
+                    <div class="container">
+                        <a class="navbar-brand" href="www.niagarasystems.co">WEST</a>
+                    </div>
+                </div>
 
-            <div class="page-header">
-                <h2>Protocol Buffers</h2>
-            </div>
-
-
-            <form class="form-inline" id="options">
                 <div class="page-header">
-                    <h3>Connection Parameters</h3>
+                    <h2>Protocol Buffers</h2>
                 </div>
-                <div class="checkbox">
-                    <label>
-                        <input id="keepalive" type="checkbox"> Enable keepalive timer
-                    </label>
-                </div>
-                <div class="form-group">
-                    <input id="timeout" type="text" class="form-control" placeholder="Timeout (ms)">
-                </div>
-            </form>
 
-            </br>
-
-            <form class="form-inline" role="form" id="conn">
-                <div class="form-group">
-                    <input type="text" class="form-control" id="userId" placeholder="Username">
-                </div>
-                <div class="form-group">
-                    <input type="text" class="form-control" id="wsHostPort" placeholder="Host[:Port] (ex.: localhost:8888)">
-                </div>
-                <button id="cA" class="btn btn-default btn-primary" type="submit" name="connect">Connect</button>
-            </form>
-
-            <div id="connected" class="hidden">
-
-                <form class="form-horizontal" role="form">
-                    <div class="form-group">
-                        <label for="inputEvent" class="col-sm-1 control-label">Event</label>
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="inputEvent" placeholder="event">
-                        </div>
+                <form class="form-inline" id="options">
+                    <div class="page-header">
+                        <h3>Connection Parameters</h3>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input id="keepalive" type="checkbox"> Enable keepalive timer
+                        </label>
                     </div>
                     <div class="form-group">
-                        <label for="inputChannel" class="col-sm-1 control-label">Channel</label>
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="inputChannel" placeholder="channel name">
-                        </div>
+                        <input id="timeout" type="text" class="form-control" placeholder="Timeout (ms)">
                     </div>
-                    <!--<div class="form-group">
-                        <label for="inputFrom" class="col-sm-1 control-label">From</label>
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="inputFrom" placeholder="from">
-                        </div>
-                    </div>-->
-                    <div class="form-group">
-                        <label for="inputId" class="col-sm-1 control-label">Id</label>
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="inputId" placeholder="id">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="inputData" class="col-sm-1 control-label">Data</label>
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="inputData" placeholder="data">
-                        </div>
-                    </div>
-
-                    <button id="sendB" type="submit" class="btn btn-primary">Send</button>
                 </form>
 
                 </br>
 
-                <div class="row">
-                    <div class="col-sm-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title">Event Log</h3>
+                <form class="form-inline" role="form" id="conn">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="userId" placeholder="Username">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="wsHostPort" placeholder="Host[:Port] (ex.: localhost:8888)">
+                    </div>
+                    <button id="cA" class="btn btn-default btn-primary" type="submit" name="connect">Connect</button>
+                </form>
+
+                <div id="connected" class="hidden">
+
+                    <form class="form-horizontal" role="form">
+                        <div class="form-group">
+                            <label for="inputEvent" class="col-sm-1 control-label">Event</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="inputEvent" placeholder="event">
                             </div>
-                            <div id="msgs" class="panel-body">
-                                Panel content
+                        </div>
+                        <div class="form-group">
+                            <label for="inputChannel" class="col-sm-1 control-label">Channel</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="inputChannel" placeholder="channel name">
+                            </div>
+                        </div>
+                        <!--<div class="form-group">
+                            <label for="inputFrom" class="col-sm-1 control-label">From</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="inputFrom" placeholder="from">
+                            </div>
+                        </div>-->
+                        <div class="form-group">
+                            <label for="inputId" class="col-sm-1 control-label">Id</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="inputId" placeholder="id">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputData" class="col-sm-1 control-label">Data</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="inputData" placeholder="data">
+                            </div>
+                        </div>
+
+                        <button id="sendB" type="submit" class="btn btn-primary">Send</button>
+                    </form>
+
+                    </br>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">Event Log</h3>
+                                </div>
+                                <div id="msgs" class="panel-body">
+                                    Panel content
+                                </div>
                             </div>
                         </div>
                     </div>
+
                 </div>
 
+            </div><!-- /.container -->
+
+        </div><!-- /.wrap -->
+
+        <div id="footer">
+            <div class="container">
+                <p class="text-muted credit">&copy; <a href="http://cabolanos.blogspot.com">Carlos Andres Bola&ntilde;os R.A. 2014</a></p>
             </div>
-
-        </div><!-- /.container -->
-
-    </div>
-
-    <div id="footer">
-        <div class="container">
-            <p class="text-muted credit">Example courtesy <a href="http://cabolanos.blogspot.com">Carlos Andres Bola&ntilde;os R.A.</a></p>
         </div>
-    </div>
 
-    <script type="text/javascript">
-        $('cA').onclick = function(event) { client.connect(); return false; };
-        $('sendB').onclick = function(event) { client.chat(); return false; };
-    </script>
+        <script type="text/javascript">
+            $('cA').onclick = function(event) { client.connect(); return false; };
+            $('sendB').onclick = function(event) { client.chat(); return false; };
+        </script>
 
     </body>
 </html>

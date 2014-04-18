@@ -1,6 +1,6 @@
 
 // WEST message specification
-message WestMsg {
+message Message {
     required string event = 1;
     optional string channel = 2;
     optional string from = 3;
