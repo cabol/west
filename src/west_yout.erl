@@ -91,7 +91,7 @@ out(A) ->
     %%   Opts = [{origin, any}],
     %% if you want to accept calls from any origin.
     Opts = [
-            {origin,            "http://" ++ (A#arg.headers)#headers.host},
+            {origin,            any},
             {keepalive,         KeepAlive},
             {keepalive_timeout, Tout},
             {drop_on_timeout,   Drop},
