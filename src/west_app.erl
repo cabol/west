@@ -40,7 +40,8 @@ start() ->
     start(normal, []).
 
 start(_Type, _Args) ->
-    {ok, [Config]} = file:consult("./etc/app.config"),
+    {ok, [[ConfigFile]]} = init:get_argument(config),
+    {ok, [Config]} = file:consult(ConfigFile),
     Yaws = proplists:get_value(yaws, Config),
     case west_sup:start_link(Yaws) of
         {ok, Sup} ->

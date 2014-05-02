@@ -142,19 +142,20 @@ Is possible interact with `west` in programmatic way with Erlang using the modul
 
     $ ./rel/west/bin/west console
     (west@127.0.0.1)1> F = fun(Event, Args) -> io:format("Event: ~p~nArgs: ~p~n", [Event, Args]) end.
-    #Fun<erl_eval.12.82930912>
+    #Fun<erl_eval.12.80484245>
     (west@127.0.0.1)2> {ok, Pid} = west_client:start_link("u1", {none, F, ["Hello"]}, []).
-    {ok,<0.405.0>}
+    {ok,<0.416.0>}
     (west@127.0.0.1)3> {ok, Pid2} = west_client:start_link("u2", {none, F, ["Hello"]}, []).
-    {ok,<0.426.0>}
+    {ok,<0.433.0>}
+    (west@127.0.0.1)4>
     (west@127.0.0.1)4> west_client:reg(Pid, "r1").
-    {ok,{msg_spec,undefined,"west",
-                  "registration_succeeded",
-                  {msg_data_spec,"r1",undefined,"Reg ok."}}}
+    {ok,{message,"registration_succeeded","r1","west",undefined,
+                 "Reg ok."}}
+    (west@127.0.0.1)5>
     (west@127.0.0.1)5> west_client:reg(Pid2, "r2").
-    {ok,{msg_spec,undefined,"west",
-                  "registration_succeeded",
-                  {msg_data_spec,"r2",undefined,"Reg ok."}}}
+    {ok,{message,"registration_succeeded","r2","west",undefined,
+                 "Reg ok."}}
+    (west@127.0.0.1)6>
     (west@127.0.0.1)6>
 
 So far, we've created two clients to `west`, and one is registered to channel `r1` and other to channel
@@ -164,37 +165,45 @@ So far, we've created two clients to `west`, and one is registered to channel `r
     (west@127.0.0.1)6> west_client:send(Pid, "r2", "hello!").
     Event: {"u1",r2,"hello!"}
     Args: ["Hello"]
-    {ok,{msg_spec,undefined,"west","sending_succeeded",
-                  {msg_data_spec,"r2",undefined,"Message sent."}}}
+    {ok,{message,"sending_succeeded","r2","west",undefined,
+                 "Message sent."}}
     (west@127.0.0.1)7>
     (west@127.0.0.1)7> west_client:send(Pid2, "r1", "hello!").
     Event: {"u2",r1,"hello!"}
     Args: ["Hello"]
-    {ok,{msg_spec,undefined,"west","sending_succeeded",
-                  {msg_data_spec,"r1",undefined,"Message sent."}}}
+    {ok,{message,"sending_succeeded","r1","west",undefined,
+                 "Message sent."}}
+    (west@127.0.0.1)8>
     (west@127.0.0.1)8>
 
 Now, let's test a pub/sub scenario. We going to subscribe `Pid` and `Pid2` to pub/sub channel `ps1`,
-and after we'll publish a message.
+and after we'll publish some messages.
 
     (west@127.0.0.1)8>
     (west@127.0.0.1)8> west_client:sub(Pid, "ps1").
-    {ok,{msg_spec,undefined,"west",
-                  "subscription_succeeded",
-                  {msg_data_spec,"ps1",undefined,"Subscription ok."}}}
+    {ok,{message,"subscription_succeeded","ps1","west",
+                 undefined,"Subscription ok."}}
+    (west@127.0.0.1)9>
     (west@127.0.0.1)9> west_client:sub(Pid2, "ps1").
-    {ok,{msg_spec,undefined,"west",
-                  "subscription_succeeded",
-                  {msg_data_spec,"ps1",undefined,"Subscription ok."}}}
+    {ok,{message,"subscription_succeeded","ps1","west",
+                 undefined,"Subscription ok."}}
     (west@127.0.0.1)10>
     (west@127.0.0.1)10> west_client:pub(Pid, "ps1", "All").
     Event: {"u1",ps1,"All"}
     Args: ["Hello"]
     Event: {"u1",ps1,"All"}
     Args: ["Hello"]
-    {ok,{msg_spec,undefined,"west","publication_succeeded",
-                  {msg_data_spec,"ps1",undefined,"Message published."}}}
+    {ok,{message,"publication_succeeded","ps1","west",undefined,
+                 "Message published."}}
     (west@127.0.0.1)11>
+    (west@127.0.0.1)11> west_client:pub(Pid2, "ps1", "All").
+    Event: {"u2",ps1,"All"}
+    Args: ["Hello"]
+    Event: {"u2",ps1,"All"}
+    Args: ["Hello"]
+    {ok,{message,"publication_succeeded","ps1","west",undefined,
+                 "Message published."}}
+    (west@127.0.0.1)12>
 
 Note that either `Pid` and `Pid2` received the published messages, both executed the callback function.
 
