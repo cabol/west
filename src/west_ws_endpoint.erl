@@ -26,7 +26,7 @@
 %%% @end
 %%% Created : 03. Oct 2013 9:57 AM
 %%%-------------------------------------------------------------------
--module(west_yout).
+-module(west_ws_endpoint).
 
 %% API
 -export([out/1]).
@@ -49,9 +49,9 @@ out(A) ->
     %% To use the extended version of the basic echo callback, add
     %% 'extversion=true' in the query string.
     CallbackMod = case yaws_api:queryvar(A, "protocol") of
-                      {ok, "text"} -> west_ws_textwp_handler;
-                      {ok, "json"} -> west_ws_jsonwp_handler;
-                      _            -> west_ws_pb_handler
+                      {ok, "text"} -> west_ws_text_protocol_handler;
+                      {ok, "json"} -> west_ws_json_protocol_handler;
+                      _            -> west_ws_pb_protocol_handler
                   end,
 
     %% To enable keepalive timer add 'keepalive=true' in the query string.

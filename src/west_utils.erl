@@ -39,7 +39,8 @@
          bin_to_hex/1,
          hmac/3,
          build_name/1,
-         iolist_to_atom/1]).
+         iolist_to_atom/1,
+         start_app_deps/1]).
 
 %%%===================================================================
 %%% API
@@ -215,6 +216,36 @@ iolist_to_atom(IoList) when is_list(IoList); is_binary(IoList) ->
             list_to_atom(IoList);
         _ ->
             throw({error, "Invalid type."})
+    end.
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Starts the given application, starting recursively all its
+%% application dependencies. Returns a list with all started
+%% applications.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec start_app_deps(App :: atom()) -> StartedApps :: list().
+start_app_deps(App) when is_atom(App) ->
+    case application:start(App) of
+        {error, {not_started, Dep}} ->
+            start_app_deps([Dep|[App]], []);
+        {error, {_, _}} ->
+            [App];
+        ok ->
+            [App]
+    end.
+start_app_deps([]=_L, Acc) when is_list(_L) ->
+    Acc;
+start_app_deps([H|T]=L, Acc) when is_list(L) ->
+    case application:start(H) of
+        {error, {not_started, Dep}} ->
+            start_app_deps([Dep|L], Acc);
+        {error, {_, _}} ->
+            start_app_deps(T, [H|Acc]);
+        ok ->
+            start_app_deps(T, [H|Acc])
     end.
 
 %%%===================================================================

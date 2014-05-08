@@ -6,6 +6,12 @@ deps
 erl_crash.dump
 .idea
 .DS_Store
+._*
 *~
 *.iml
-./priv/data/*
+priv/data/*
+rel/west
+dev
+log
+data
+*_server*

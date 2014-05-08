@@ -28,7 +28,7 @@
 %%% @end
 %%% Created : 03. Oct 2013 9:57 AM
 %%%-------------------------------------------------------------------
--module(west_ws_textwp_handler).
+-module(west_ws_text_protocol_handler).
 
 %% Export for websocket callbacks
 -export([init/1,

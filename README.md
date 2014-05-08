@@ -2,7 +2,7 @@
 Web-Event-Driven System's Tool
 ==============================
 
-__Authors:__ Carlos Andres Bolaños R.A. ([`cabolanos@niagarasystems.co`](mailto:cabolanos@niagarasystems.co)).
+__Authors:__ Carlos Andres Bolaños R.A. ([`cabolanos-dev@gmail.com`](mailto:cabolanos-dev@gmail.com)).
 
 A new way to build real-time and high scalable messaging-based applications, not centralized but distributed!
 
@@ -11,9 +11,9 @@ A new way to build real-time and high scalable messaging-based applications, not
 Overview
 --------
 
-`WEST` (Web/Event-Driven System's Tool) is a tool that enables the development of real-time, mission-critical and
-messaging-based systems, giving properties such as: massive concurrency, fault-tolerance, high scalability,
-high performance, and high availability.
+`WEST` (Web/Event-Driven Systems Tool) is a tool that enables the development of real-time, mission-critical and
+messaging-based systems, [EDA](http://en.wikipedia.org/wiki/Event-driven_architecture) based systems, giving
+properties such as: massive concurrency, fault-tolerance, high scalability, high performance, and high availability.
 
 `WEST` is written in `Erlang/OTP`, enables messaging patterns like Pub/Sub and Request/Reply. Also comes with a
 WebSockets API and different protocols options such as: JSON, Text and Protocol Buffers, in order to interact with it.
@@ -233,13 +233,11 @@ model based on `gen_leader`.
 
 4. Now you need to restart `gproc` on each node, in order that it can configure itself.
 
-    ```
-    ./dev/dev1/bin/west attach
-    (west1@127.0.0.1)1> rpc:multicall(application, stop, [gproc]).
-    {[ok,ok,ok],[]}
-    (west1@127.0.0.1)2> rpc:multicall(application, start, [gproc]).
-    {[ok,ok,ok],[]}
-    ```
+        ./dev/dev1/bin/west attach
+        (west1@127.0.0.1)1> rpc:multicall(application, stop, [gproc]).
+        {[ok,ok,ok],[]}
+        (west1@127.0.0.1)2> rpc:multicall(application, start, [gproc]).
+        {[ok,ok,ok],[]}
 
 However, is recommended run `west` distributed in default way, with `gproc` local and `riak_core` support.
 
