@@ -29,8 +29,8 @@
 -record(eh_cb_spec, {mod, func, args}).
 -define(CALLBACK_SPEC, #eh_cb_spec).
 
--record(westmsg, {event, channel, from, id, data}).
--define(MSG, #westmsg).
+-record(message, {event, channel, from, id, data}).
+-define(MSG, #message).
 
 -define(MSG_FIELDS, [event, channel, from, id, data]).
 

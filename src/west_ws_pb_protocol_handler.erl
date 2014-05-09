@@ -29,7 +29,7 @@
 %%% @end
 %%% Created : 13. Apr 2014 12:26 PM
 %%%-------------------------------------------------------------------
--module(west_ws_pb_handler).
+-module(west_ws_pb_protocol_handler).
 
 %% Export for websocket callbacks
 -export([init/1,
@@ -88,7 +88,7 @@ init([Arg, InitialState]) ->
         _ ->
             Err = ?MSG{event = "bad_request",
                        data = <<"Error, missing key in path.">>},
-            {error, iolist_to_binary(west_msg_pb:encode_westmsg(Err))}
+            {error, iolist_to_binary(west_msg_pb:encode_message(Err))}
     end.
 
 %%--------------------------------------------------------------------
@@ -102,7 +102,7 @@ init([Arg, InitialState]) ->
 %%--------------------------------------------------------------------
 handle_open(WSState, State) ->
     Response = ?RES_CONN_ESTABLISHED(pb),
-    ResBin = west_msg_pb:encode_westmsg(Response),
+    ResBin = west_msg_pb:encode_message(Response),
     yaws_websockets:send(WSState, {binary, iolist_to_binary(ResBin)}),
     {ok, State}.
 
@@ -120,30 +120,30 @@ handle_message({binary, Msg},
                #state{nb_bins=M, server=?WEST_SERVER{key=K}}=State) ->
     ?LOG_INFO("Received binary msg (M=~p): ~p bytes~n", [M, byte_size(Msg)]),
     try
-        DecMsg = west_msg_pb:decode_westmsg(Msg),
-        Cmd = west_utils:iolist_to_atom(DecMsg#westmsg.event),
+        DecMsg = west_msg_pb:decode_message(Msg),
+        Cmd = west_utils:iolist_to_atom(DecMsg#message.event),
         ?LOG_INFO("[~p] ~p ~p~n",
-                  [K, DecMsg#westmsg.event, DecMsg#westmsg.channel]),
+                  [K, DecMsg#message.event, DecMsg#message.channel]),
         case west_protocol_handler:handle_event(Cmd,
                                                 DecMsg,
                                                 State#state.server) of
             {ok, Res} ->
-                BinRes = iolist_to_binary(west_msg_pb:encode_westmsg(Res)),
+                BinRes = iolist_to_binary(west_msg_pb:encode_message(Res)),
                 {reply, {binary, BinRes}, State#state{nb_bins=M+1}};
             {error, Err} ->
-                BinErr = iolist_to_binary(west_msg_pb:encode_westmsg(Err)),
+                BinErr = iolist_to_binary(west_msg_pb:encode_message(Err)),
                 {reply, {binary, BinErr}, State#state{nb_bins=M+1}};
             _ ->
-                Err1 = ?RES_ACTION_NOT_ALLOWED(DecMsg#westmsg.id,
-                                               DecMsg#westmsg.channel,
+                Err1 = ?RES_ACTION_NOT_ALLOWED(DecMsg#message.id,
+                                               DecMsg#message.channel,
                                                pb),
-                BinErr1 = iolist_to_binary(west_msg_pb:encode_westmsg(Err1)),
+                BinErr1 = iolist_to_binary(west_msg_pb:encode_message(Err1)),
                 {reply, {binary, BinErr1}, State#state{nb_bins=M+1}}
         end
     catch
         _:_ ->
             Err2 = ?RES_BAD_REQUEST(pb),
-            BinErr2 = iolist_to_binary(west_msg_pb:encode_westmsg(Err2)),
+            BinErr2 = iolist_to_binary(west_msg_pb:encode_message(Err2)),
             {reply, {binary, BinErr2}, State#state{nb_bins=M+1}}
     end;
 
@@ -188,7 +188,7 @@ handle_message({close, Status, Reason}, _) ->
 %%--------------------------------------------------------------------
 handle_info(timeout, State) ->
     ?LOG_INFO("process timed out~n", []),
-    Bin = iolist_to_binary(west_msg_pb:encode_westmsg(?MSG{event="timeout"})),
+    Bin = iolist_to_binary(west_msg_pb:encode_message(?MSG{event="timeout"})),
     {reply, {binary, Bin}, State};
 handle_info(_Info, State) ->
     {noreply, State}.
@@ -220,5 +220,5 @@ terminate(Reason, State) ->
 %%--------------------------------------------------------------------
 ev_callback({ETag, Event, Msg}, [WSRef, Id]) ->
     Reply = ?RES_CH_NEW_MSG(Id, ETag, atom_to_binary(Event, utf8), Msg, pb),
-    BinReply = iolist_to_binary(west_msg_pb:encode_westmsg(Reply)),
+    BinReply = iolist_to_binary(west_msg_pb:encode_message(Reply)),
     yaws_api:websocket_send(WSRef, {binary, BinReply}).
