@@ -66,16 +66,16 @@ handle_event(register,
                 {error, _} ->
                     {error, ?RES_INTERNAL_ERROR(Id, F)};
                 {_, registration_succeeded, _} ->
-                    {ok, ?RES_REG_OK(Id, Ch, "Reg ok.", F)};
+                    {ok, ?RES_REG_OK(Id, Ch, F)};
                 {_, registration_denied, _} ->
-                    {ok, ?RES_REG_DENIED(Id, Ch, "Reg denied.", F)};
+                    {ok, ?RES_REG_DENIED(Id, Ch, F)};
                 {_, registration_already_exist, _} ->
-                    {ok, ?RES_REG_ALREADY_EXIST(Id, Ch, "Reg exist.", F)};
+                    {ok, ?RES_REG_ALREADY_EXIST(Id, Ch, F)};
                 _ ->
-                    {error, ?RES_REG_FAILED(Id, Ch, "Reg failed.", F)}
+                    {error, ?RES_REG_FAILED(Id, Ch, F)}
             end;
         _ ->
-            {error, ?RES_REG_FAILED(Id, Ch, "Channel undefined.", F)}
+            {error, ?RES_REG_FAILED(Id, Ch, F)}
     end;
 
 %%--------------------------------------------------------------------
@@ -96,14 +96,14 @@ handle_event(unregister,
                 {error, _} ->
                     {error, ?RES_INTERNAL_ERROR(Id, F)};
                 {_, unregistration_succeeded, _} ->
-                    {ok, ?RES_UNREG_OK(Id, Ch, "Unreg ok.", F)};
+                    {ok, ?RES_UNREG_OK(Id, Ch, F)};
                 {_, registration_not_found, _} ->
-                    {ok, ?RES_REG_NOT_FOUND(Id, Ch, "Reg not found", F)};
+                    {ok, ?RES_REG_NOT_FOUND(Id, Ch, F)};
                 _ ->
-                    {error, ?RES_UNREG_FAILED(Id, Ch, "Unreg failed.", F)}
+                    {error, ?RES_UNREG_FAILED(Id, Ch, F)}
             end;
         _ ->
-            {error, ?RES_UNREG_FAILED(Id, Ch, "Channel undefined.", F)}
+            {error, ?RES_UNREG_FAILED(Id, Ch, F)}
     end;
 
 %%--------------------------------------------------------------------
@@ -124,14 +124,14 @@ handle_event(send,
                 {error, _} ->
                     {error, ?RES_INTERNAL_ERROR(Id, F)};
                 {_, sending_succeeded, _} ->
-                    {ok, ?RES_SEND_OK(Id, Ch, "Message sent.", F)};
+                    {ok, ?RES_SEND_OK(Id, Ch, F)};
                 {_, sending_failed, _} ->
-                    {ok, ?RES_REG_NOT_FOUND(Id, Ch, "Reg not found", F)};
+                    {ok, ?RES_REG_NOT_FOUND(Id, Ch, F)};
                 _ ->
-                    {error, ?RES_SEND_FAILED(Id, Ch, "Send failed.", F)}
+                    {error, ?RES_SEND_FAILED(Id, Ch, F)}
             end;
         _ ->
-            {error, ?RES_SEND_FAILED(Id, Ch, "Chann. or Msg is undefined.", F)}
+            {error, ?RES_SEND_FAILED(Id, Ch, F)}
     end;
 
 %%--------------------------------------------------------------------
@@ -153,9 +153,9 @@ handle_event(publish,
                 _ ->
                     ?PS_PUB_ALL(l, K, Event, Data)
             end,
-            {ok, ?RES_PUB_OK(Id, Ch, "Message published.", F)};
+            {ok, ?RES_PUB_OK(Id, Ch, F)};
         _ ->
-            {error, ?RES_PUB_FAILED(Id, Ch, "Chann. or Msg is undefined.", F)}
+            {error, ?RES_PUB_FAILED(Id, Ch, F)}
     end;
 
 %%--------------------------------------------------------------------
@@ -176,16 +176,16 @@ handle_event(subscribe,
                 {error, _} ->
                     {error, ?RES_INTERNAL_ERROR(Id, F)};
                 {_, subscription_succeeded, _} ->
-                    {ok, ?RES_SUB_OK(Id, Ch, "Subscription ok.", F)};
+                    {ok, ?RES_SUB_OK(Id, Ch, F)};
                 {_, subscription_failed, _} ->
-                    {ok, ?RES_SUB_FAILED(Id, Ch, "Sub error.", F)};
+                    {ok, ?RES_SUB_FAILED(Id, Ch, F)};
                 {_, subscription_already_exist, _} ->
-                    {ok, ?RES_SUB_ALREADY_EXIST(Id, Ch, "Sub exist.", F)};
+                    {ok, ?RES_SUB_ALREADY_EXIST(Id, Ch, F)};
                 _ ->
-                    {error, ?RES_SUB_FAILED(Id, Ch, "Subscription failed.", F)}
+                    {error, ?RES_SUB_FAILED(Id, Ch, F)}
             end;
         _ ->
-            {error, ?RES_SUB_FAILED(Id, Ch, "Channel undefined.", F)}
+            {error, ?RES_SUB_FAILED(Id, Ch, F)}
     end;
 
 %%--------------------------------------------------------------------
@@ -206,14 +206,14 @@ handle_event(unsubscribe,
                 {error, _} ->
                     {error, ?RES_INTERNAL_ERROR(Id, F)};
                 {_, unsubscription_succeeded, _} ->
-                    {ok, ?RES_UNSUB_OK(Id, Ch, "Unsub ok.", F)};
+                    {ok, ?RES_UNSUB_OK(Id, Ch, F)};
                 {_, subscription_not_found, _} ->
-                    {ok, ?RES_SUB_NOT_FOUND(Id, Ch, "Sub not found.", F)};
+                    {ok, ?RES_SUB_NOT_FOUND(Id, Ch, F)};
                 _ ->
-                    {error, ?RES_UNSUB_FAILED(Id, Ch, "Unsub failed.", F)}
+                    {error, ?RES_UNSUB_FAILED(Id, Ch, F)}
             end;
         _ ->
-            {error, ?RES_UNSUB_FAILED(Id, Ch, "Channel undefined.", F)}
+            {error, ?RES_UNSUB_FAILED(Id, Ch, F)}
     end;
 
 handle_event(Any, _Msg, _State) ->
@@ -230,11 +230,11 @@ handle_event(Any, _Msg, _State) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
-execute(?WEST_SERVER{dist=Dist, west_dist=WDist}, B, K, {M, F, A}=Val) ->
+execute(?WEST_SERVER{dist=Dist, dist_props=DistProps}, B, K, {M, F, A}=Val) ->
     case Dist of
         gproc_dist ->
             apply(M, F, A);
         _ ->
-            Opts = proplists:get_value(opts, WDist, []),
+            Opts = proplists:get_value(opts, DistProps, []),
             apply(west_dist, cmd, [B, K, Val, Opts])
     end.

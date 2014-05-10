@@ -89,18 +89,6 @@ process_specs(Args) ->
                   2000,
                   supervisor,
                   [west_event_handler_sup]},
-    Yaws = case Args of
-               undefined ->
-                   [];
-               _ when is_list(Args) ->
-                   Ybed_sup = {ybed_sup,
-                               {ybed_sup, start_link, Args},
-                               permanent,
-                               2000,
-                               supervisor,
-                               [ybed_sup]},
-                   [Ybed_sup]
-           end,
     Dist = case application:get_env(west, dist) of
                {ok, gproc_dist} ->
                    [];
@@ -120,6 +108,18 @@ process_specs(Args) ->
                              supervisor,
                              [west_dist_cmd_fsm_sup]},
                    [VMaster, CmdFSM]
+           end,
+    Yaws = case Args of
+               undefined ->
+                   [];
+               _ when is_list(Args) ->
+                   Ybed_sup = {ybed_sup,
+                               {ybed_sup, start_link, Args},
+                               permanent,
+                               2000,
+                               supervisor,
+                               [ybed_sup]},
+                   [Ybed_sup]
            end,
     [EvHdlr_sup] ++ Dist ++ Yaws.
 

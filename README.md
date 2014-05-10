@@ -30,7 +30,7 @@ WEST uses some project as support infrastructure.
 * `gproc` as extended process dictionary and pub/sub infrastructure.
 * `riak_core` as distributed framework in order to scale out. With this distributed model, `gproc` runs locally
   in each node, and `riak_core` is used to distribute the processes around the cluster.
-* `yaws` as web server, this provides the WebSockets infrastructure.
+* `yaws` as web server, this provides the WebSockets infrastructure and Web Server.
 
 
 
@@ -62,7 +62,7 @@ WEST process.
     $ ./rel/west/bin/west attach
 
 You can use `west` from web client ([http://localhost:8080](http://localhost:8080)) or directly with Erlang
-`west_client`. See below the different ways to use it and test it.
+`west` module. See below the different ways to use it and test it.
 
 
 
@@ -97,7 +97,7 @@ is happening with vnode 1 (dev1):
 
 Now you have tree nodes running in cluster, we're ready to use `west` distributed.
 
-You can use `west` from web client or directly with `west_client`. See below the different ways to use it
+You can use `west` from web client or directly with `west` module. See below the different ways to use it
 and test it.
 
 NOTE: If you don't want to run WEST as daemons, alternatively, you can start each vnode from the console
@@ -138,21 +138,21 @@ Now you can try:
 WEST Erlang Client
 ------------------
 
-Is possible interact with `west` in programmatic way with Erlang using the module `west_client`.
+Is possible interact with `west` in programmatic way with Erlang using the Erlang `west` module.
 
     $ ./rel/west/bin/west console
     (west@127.0.0.1)1> F = fun(Event, Args) -> io:format("Event: ~p~nArgs: ~p~n", [Event, Args]) end.
     #Fun<erl_eval.12.80484245>
-    (west@127.0.0.1)2> {ok, Pid} = west_client:start_link("u1", {none, F, ["Hello"]}, []).
+    (west@127.0.0.1)2> {ok, Pid} = west:start_link("u1", {none, F, ["Hello"]}, []).
     {ok,<0.416.0>}
-    (west@127.0.0.1)3> {ok, Pid2} = west_client:start_link("u2", {none, F, ["Hello"]}, []).
+    (west@127.0.0.1)3> {ok, Pid2} = west:start_link("u2", {none, F, ["Hello"]}, []).
     {ok,<0.433.0>}
     (west@127.0.0.1)4>
-    (west@127.0.0.1)4> west_client:reg(Pid, "r1").
+    (west@127.0.0.1)4> west:reg(Pid, "r1").
     {ok,{message,"registration_succeeded","r1","west",undefined,
                  "Reg ok."}}
     (west@127.0.0.1)5>
-    (west@127.0.0.1)5> west_client:reg(Pid2, "r2").
+    (west@127.0.0.1)5> west:reg(Pid2, "r2").
     {ok,{message,"registration_succeeded","r2","west",undefined,
                  "Reg ok."}}
     (west@127.0.0.1)6>
@@ -162,13 +162,13 @@ So far, we've created two clients to `west`, and one is registered to channel `r
 `r2`. Now let's send some messages:
 
     (west@127.0.0.1)6>
-    (west@127.0.0.1)6> west_client:send(Pid, "r2", "hello!").
+    (west@127.0.0.1)6> west:send(Pid, "r2", "hello!").
     Event: {"u1",r2,"hello!"}
     Args: ["Hello"]
     {ok,{message,"sending_succeeded","r2","west",undefined,
                  "Message sent."}}
     (west@127.0.0.1)7>
-    (west@127.0.0.1)7> west_client:send(Pid2, "r1", "hello!").
+    (west@127.0.0.1)7> west:send(Pid2, "r1", "hello!").
     Event: {"u2",r1,"hello!"}
     Args: ["Hello"]
     {ok,{message,"sending_succeeded","r1","west",undefined,
@@ -180,15 +180,15 @@ Now, let's test a pub/sub scenario. We going to subscribe `Pid` and `Pid2` to pu
 and after we'll publish some messages.
 
     (west@127.0.0.1)8>
-    (west@127.0.0.1)8> west_client:sub(Pid, "ps1").
+    (west@127.0.0.1)8> west:sub(Pid, "ps1").
     {ok,{message,"subscription_succeeded","ps1","west",
                  undefined,"Subscription ok."}}
     (west@127.0.0.1)9>
-    (west@127.0.0.1)9> west_client:sub(Pid2, "ps1").
+    (west@127.0.0.1)9> west:sub(Pid2, "ps1").
     {ok,{message,"subscription_succeeded","ps1","west",
                  undefined,"Subscription ok."}}
     (west@127.0.0.1)10>
-    (west@127.0.0.1)10> west_client:pub(Pid, "ps1", "All").
+    (west@127.0.0.1)10> west:pub(Pid, "ps1", "All").
     Event: {"u1",ps1,"All"}
     Args: ["Hello"]
     Event: {"u1",ps1,"All"}
@@ -196,7 +196,7 @@ and after we'll publish some messages.
     {ok,{message,"publication_succeeded","ps1","west",undefined,
                  "Message published."}}
     (west@127.0.0.1)11>
-    (west@127.0.0.1)11> west_client:pub(Pid2, "ps1", "All").
+    (west@127.0.0.1)11> west:pub(Pid2, "ps1", "All").
     Event: {"u2",ps1,"All"}
     Args: ["Hello"]
     Event: {"u2",ps1,"All"}
@@ -248,7 +248,7 @@ Implementation Notes
 
 ### Top-level layers view ###
 
-![LayerArch](./doc/assets/west_top_level_layer_view.png)
+![LayerArch](./doc/assets/west_arch_layer_view.png)
 
 ### Overview of supervision ###
 

@@ -20,7 +20,7 @@
 */
 
 
-// WEST message specification
+// Message specification
 message Message {
     required string event = 1;
     optional string channel = 2;

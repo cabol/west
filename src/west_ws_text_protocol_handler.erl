@@ -23,7 +23,7 @@
 %%% @copyright (C) 2013, <Carlos Andres Bolaños>, All Rights Reserved.
 %%% @doc Text Wire Protocol. This module is the `yaws' extended
 %%%      callback module. Here the WS messages are received and
-%%%      handle them.
+%%%      handled.
 %%% @see <a href="https://github.com/klacke/yaws">Yaws Sources</a>
 %%% @end
 %%% Created : 03. Oct 2013 9:57 AM
@@ -68,10 +68,10 @@ init([Arg, InitialState]) ->
                 gproc_dist -> g;
                 _          -> l
             end,
-    WDist = case application:get_env(west, west_dist) of
-                {ok, Env1} -> Env1;
-                _          -> [{n, 1}, {q, 1}]
-            end,
+    DistProps = case application:get_env(west, dist_props) of
+                    {ok, Env1} -> Env1;
+                    _          -> [{n, 1}, {q, 1}]
+                end,
     case string:tokens(Arg#arg.pathinfo, "/") of
         [Key] ->
             Name = west_utils:build_name([Key, self(), erlang:now()]),
@@ -80,9 +80,9 @@ init([Arg, InitialState]) ->
             {ok, #state{server=?WEST_SERVER{name=Name,
                                             key=Key,
                                             dist=Dist,
-                                            west_dist=WDist,
+                                            dist_props=DistProps,
                                             scope=Scope,
-                                            cb = CbSpec,
+                                            cb=CbSpec,
                                             format=text}}};
         _ ->
             {error, <<"Error, missing key in path.">>}

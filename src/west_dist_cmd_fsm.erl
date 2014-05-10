@@ -234,10 +234,8 @@ prepare(timeout, SD0=#state{bkey=BKey, n=N}) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
-execute(timeout, SD0=#state{req_id=ReqID,
-                            op=Op,
-                            val=Val,
-                            preflist=PrefList}) ->
+execute(timeout,
+        SD0=#state{req_id=ReqID, op=Op, val=Val, preflist=PrefList}) ->
     case Val of
         undefined ->
             west_dist_vnode:Op(PrefList, ReqID);
