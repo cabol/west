@@ -90,94 +90,94 @@
     west_msg_utils:build_msg(
         Id, ET, "new_message", C, B, F)).
 
--define(RES_CH_NOT_FOUND(Id, C, B, F),
+-define(RES_CH_NOT_FOUND(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "channel_not_found", C, B, F)).
+        Id, "west", "channel_not_found", C, undefined, F)).
 
--define(RES_CH_CREATION_OK(Id, C, B, F),
+-define(RES_CH_CREATION_OK(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "channel_creation_succeeded", C, B, F)).
+        Id, "west", "channel_creation_succeeded", C, undefined, F)).
 
--define(RES_CH_ALREADY_EXIST(Id, C, B, F),
+-define(RES_CH_ALREADY_EXIST(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "channel_already_exist", C, B, F)).
+        Id, "west", "channel_already_exist", C, undefined, F)).
 
--define(RES_CH_CREATION_FAILED(Id, C, B, F),
+-define(RES_CH_CREATION_FAILED(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "channel_creation_failed", C, B, F)).
+        Id, "west", "channel_creation_failed", C, undefined, F)).
 
--define(RES_CH_DELETE_OK(Id, C, B, F),
+-define(RES_CH_DELETE_OK(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "channel_delete_succeeded", C, B, F)).
+        Id, "west", "channel_delete_succeeded", C, undefined, F)).
 
--define(RES_CH_DELETE_FAILED(Id, C, B, F),
+-define(RES_CH_DELETE_FAILED(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "channel_delete_failed", C, B, F)).
+        Id, "west", "channel_delete_failed", C, undefined, F)).
 
--define(RES_REG_OK(Id, C, B, F),
+-define(RES_REG_OK(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "registration_succeeded", C, B, F)).
+        Id, "west", "registration_succeeded", C, undefined, F)).
 
--define(RES_REG_FAILED(Id, C, B, F),
+-define(RES_REG_FAILED(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "registration_failed", C, B, F)).
+        Id, "west", "registration_failed", C, undefined, F)).
 
--define(RES_REG_ALREADY_EXIST(Id, C, B, F),
+-define(RES_REG_ALREADY_EXIST(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "registration_already_exist", C, B, F)).
+        Id, "west", "registration_already_exist", C, undefined, F)).
 
--define(RES_REG_NOT_FOUND(Id, C, B, F),
+-define(RES_REG_NOT_FOUND(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "registration_not_found", C, B, F)).
+        Id, "west", "registration_not_found", C, undefined, F)).
 
--define(RES_REG_DENIED(Id, C, B, F),
+-define(RES_REG_DENIED(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "registration_denied", C, B, F)).
+        Id, "west", "registration_denied", C, undefined, F)).
 
--define(RES_UNREG_OK(Id, C, B, F),
+-define(RES_UNREG_OK(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "unregistration_succeeded", C, B, F)).
+        Id, "west", "unregistration_succeeded", C, undefined, F)).
 
--define(RES_UNREG_FAILED(Id, C, B, F),
+-define(RES_UNREG_FAILED(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "unregistration_failed", C, B, F)).
+        Id, "west", "unregistration_failed", C, undefined, F)).
 
--define(RES_SEND_OK(Id, C, B, F),
+-define(RES_SEND_OK(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "sending_succeeded", C, B, F)).
+        Id, "west", "sending_succeeded", C, undefined, F)).
 
--define(RES_SEND_FAILED(Id, C, B, F),
+-define(RES_SEND_FAILED(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "sending_failed", C, B, F)).
+        Id, "west", "sending_failed", C, undefined, F)).
 
--define(RES_SUB_OK(Id, C, B, F),
+-define(RES_SUB_OK(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "subscription_succeeded", C, B, F)).
+        Id, "west", "subscription_succeeded", C, undefined, F)).
 
--define(RES_SUB_ALREADY_EXIST(Id, C, B, F),
+-define(RES_SUB_ALREADY_EXIST(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "subscription_already_exist", C, B, F)).
+        Id, "west", "subscription_already_exist", C, undefined, F)).
 
--define(RES_SUB_NOT_FOUND(Id, C, B, F),
+-define(RES_SUB_NOT_FOUND(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "subscription_not_found", C, B, F)).
+        Id, "west", "subscription_not_found", C, undefined, F)).
 
--define(RES_SUB_FAILED(Id, C, B, F),
+-define(RES_SUB_FAILED(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "subscription_failed", C, B, F)).
+        Id, "west", "subscription_failed", C, undefined, F)).
 
--define(RES_UNSUB_OK(Id, C, B, F),
+-define(RES_UNSUB_OK(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "unsubscription_succeeded", C, B, F)).
+        Id, "west", "unsubscription_succeeded", C, undefined, F)).
 
--define(RES_UNSUB_FAILED(Id, C, B, F),
+-define(RES_UNSUB_FAILED(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "unsubscription_failed", C, B, F)).
+        Id, "west", "unsubscription_failed", C, undefined, F)).
 
--define(RES_PUB_OK(Id, C, B, F),
+-define(RES_PUB_OK(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "publication_succeeded", C, B, F)).
+        Id, "west", "publication_succeeded", C, undefined, F)).
 
--define(RES_PUB_FAILED(Id, C, B, F),
+-define(RES_PUB_FAILED(Id, C, F),
     west_msg_utils:build_msg(
-        Id, "west", "publication_failed", C, B, F)).
+        Id, "west", "publication_failed", C, undefined, F)).

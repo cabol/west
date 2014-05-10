@@ -37,7 +37,7 @@
 -record(channel_spec, {name, type, user_id, date}).
 -define(CHANNEL, #channel_spec).
 
--record(west_server_spec, {name, key, dist, west_dist, scope, cb, format}).
+-record(west_server_spec, {name, key, dist, dist_props, scope, cb, format}).
 -define(WEST_SERVER, #west_server_spec).
 
 -type scope()       :: l | g.

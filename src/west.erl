@@ -25,7 +25,7 @@
 %%% @end
 %%% Created : 10. Nov 2013 10:53 AM
 %%%-------------------------------------------------------------------
--module(west_client).
+-module(west).
 
 -behaviour(gen_server).
 
@@ -158,16 +158,16 @@ init([Key, CallbackSpec, Opts]) ->
                 gproc_dist -> g;
                 _          -> l
             end,
-    WDist = case application:get_env(west, west_dist) of
-                {ok, Env1} -> Env1;
-                _          -> [{n, 1}, {q, 1}]
-            end,
+    DistProps = case application:get_env(west, dist_props) of
+                    {ok, Env1} -> Env1;
+                    _          -> [{n, 1}, {q, 1}]
+                end,
     Name = west_utils:build_name([Key, self(), erlang:now()]),
     register(Name, self()),
     Server = ?WEST_SERVER{name=Name,
                           key=Key,
                           dist=Dist,
-                          west_dist=WDist,
+                          dist_props=DistProps,
                           scope=Scope,
                           cb=CallbackSpec},
     {ok, #state{server=Server, opts=Opts}}.
