@@ -37,21 +37,29 @@
 -include("west.hrl").
 
 out(A) ->
-    %% Hanshake callback
-    case application:get_env(west, ws_hanshake_cb) of
-        {ok, {Mod, Fun}} when Mod =/= none andalso Fun =/= none ->
+    %% HTTP WebSocket handshake callback
+    case application:get_env(west, http_ws_handshake_callback) of
+        {ok, {Mod, Fun}} when Mod =/= none, Fun =/= none ->
             ?LOG_INFO("apply(~p, ~p)~n", [Mod, Fun]),
-            apply(Mod, Fun, [A]);
+            case apply(Mod, Fun, [A]) of
+                ok ->
+                    upgrade_http_to_websocket(A);
+                {Rc, Rp} when is_integer(Rc), is_list(Rp) ->
+                    [{status, Rc}, {html, iolist_to_binary(Rp)}];
+                _ ->
+                    [{status, 401}, {html, <<>>}]
+            end;
         _ ->
-            ok
-    end,
+            upgrade_http_to_websocket(A)
+    end.
 
+upgrade_http_to_websocket(A) ->
     %% To use the extended version of the basic echo callback, add
     %% 'extversion=true' in the query string.
     CallbackMod = case yaws_api:queryvar(A, "protocol") of
                       {ok, "text"} -> west_ws_text_protocol_handler;
-                      {ok, "json"} -> west_ws_json_protocol_handler;
-                      _            -> west_ws_pb_protocol_handler
+                      {ok, "pb"}   -> west_ws_pb_protocol_handler;
+                      _            -> west_ws_json_protocol_handler
                   end,
 
     %% To enable keepalive timer add 'keepalive=true' in the query string.
