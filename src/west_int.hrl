@@ -168,6 +168,28 @@
             {error, Error}
     end).
 
+-define(PROC_INFO(Pid),
+    try
+        {gproc, Value} = gproc:info(Pid, gproc),
+        Value
+    catch
+        _:_ ->
+            Error = lists:flatten(
+                io_lib:format("[Proc:~p] Error getting process info.", [Pid])),
+            {error, Error}
+    end).
+
+-define(PROC_TYPE(Pid),
+    try
+        {gproc, [{{Type, _, _}, _}|_T]} = gproc:info(Pid, gproc),
+        Type
+    catch
+        _:_ ->
+            Error = lists:flatten(
+                io_lib:format("[Proc:~p] Error getting process type.", [Pid])),
+            {error, Error}
+    end).
+
 -define(ENC_JSON(Any),
     try
         iolist_to_binary(mochijson2:encode(Any))

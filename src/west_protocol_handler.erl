@@ -216,6 +216,13 @@ handle_event(unsubscribe,
             {error, ?RES_UNSUB_FAILED(Id, Ch, F)}
     end;
 
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% Unhandled events.
+%%
+%% @end
+%%--------------------------------------------------------------------
 handle_event(Any, _Msg, _State) ->
     {none, Any}.
 
