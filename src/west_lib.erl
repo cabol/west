@@ -111,9 +111,14 @@ unreg(Ref, Key) ->
     case whereis(Name) of
         undefined ->
             {error, registration_not_found, Key};
-        _ ->
-            west_event_handler:delete(Name),
-            {ok, unregistration_succeeded, Key}
+        Pid ->
+            case ?PROC_TYPE(Pid) of
+                n ->
+                    west_event_handler:delete(Name),
+                    {ok, unregistration_succeeded, Key};
+                _ ->
+                    {error, registration_not_found, Key}
+            end
     end.
 
 %%--------------------------------------------------------------------
@@ -217,9 +222,14 @@ unsub(Ref, Event) ->
     case whereis(Name) of
         undefined ->
             {error, subscription_not_found, Event};
-        _ ->
-            west_event_handler:delete(Name),
-            {ok, unsubscription_succeeded, Event}
+        Pid ->
+            case ?PROC_TYPE(Pid) of
+                p ->
+                    west_event_handler:delete(Name),
+                    {ok, unsubscription_succeeded, Event};
+                _ ->
+                    {error, subscription_not_found, Event}
+            end
     end.
 
 %%--------------------------------------------------------------------

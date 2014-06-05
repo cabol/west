@@ -1,8 +1,8 @@
 
-Web-Event-Driven System's Tool
-==============================
+Web/Event-driven Systems Tool
+=============================
 
-__Authors:__ Carlos Andres Bolaños R.A. ([`cabolanos-dev@gmail.com`](mailto:cabolanos-dev@gmail.com)).
+__Authors:__ Carlos Andres Bolaños R.A. ([`cabolanos.dev@gmail.com`](mailto:cabolanos.dev@gmail.com)).
 
 A new way to build real-time and high scalable messaging-based applications, not centralized but distributed!
 

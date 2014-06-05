@@ -122,4 +122,3 @@ process_specs(Args) ->
                    [Ybed_sup]
            end,
     [EvHdlr_sup] ++ Dist ++ Yaws.
-
