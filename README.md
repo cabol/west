@@ -2,7 +2,7 @@
 Web/Event-driven Systems Tool
 =============================
 
-__Authors:__ Carlos Andres Bolaños R.A. ([`cabolanos.dev@gmail.com`](mailto:cabolanos.dev@gmail.com)).
+__Authors:__ Carlos Andres Bolaños R.A. ([`cabolanos@niagarasystems.co`](mailto:cabolanos@niagarasystems.co)).
 
 A new way to build real-time and high scalable messaging-based applications, not centralized but distributed!
 
@@ -149,12 +149,10 @@ Is possible interact with `west` in programmatic way with Erlang using the Erlan
     {ok,<0.433.0>}
     (west@127.0.0.1)4>
     (west@127.0.0.1)4> west:reg(Pid, "r1").
-    {ok,{message,"registration_succeeded","r1","west",undefined,
-                 "Reg ok."}}
+    {ok,{message,"registration_succeeded","r1","west",undefined,undefined}}
     (west@127.0.0.1)5>
     (west@127.0.0.1)5> west:reg(Pid2, "r2").
-    {ok,{message,"registration_succeeded","r2","west",undefined,
-                 "Reg ok."}}
+    {ok,{message,"registration_succeeded","r2","west",undefined,undefined}}
     (west@127.0.0.1)6>
     (west@127.0.0.1)6>
 
@@ -165,14 +163,12 @@ So far, we've created two clients to `west`, and one is registered to channel `r
     (west@127.0.0.1)6> west:send(Pid, "r2", "hello!").
     Event: {"u1",r2,"hello!"}
     Args: ["Hello"]
-    {ok,{message,"sending_succeeded","r2","west",undefined,
-                 "Message sent."}}
+    {ok,{message,"sending_succeeded","r2","west",undefined,undefined}}
     (west@127.0.0.1)7>
     (west@127.0.0.1)7> west:send(Pid2, "r1", "hello!").
     Event: {"u2",r1,"hello!"}
     Args: ["Hello"]
-    {ok,{message,"sending_succeeded","r1","west",undefined,
-                 "Message sent."}}
+    {ok,{message,"sending_succeeded","r1","west",undefined,undefined}}
     (west@127.0.0.1)8>
     (west@127.0.0.1)8>
 
@@ -181,28 +177,24 @@ and after we'll publish some messages.
 
     (west@127.0.0.1)8>
     (west@127.0.0.1)8> west:sub(Pid, "ps1").
-    {ok,{message,"subscription_succeeded","ps1","west",
-                 undefined,"Subscription ok."}}
+    {ok,{message,"subscription_succeeded","ps1","west",undefined,undefined}}
     (west@127.0.0.1)9>
     (west@127.0.0.1)9> west:sub(Pid2, "ps1").
-    {ok,{message,"subscription_succeeded","ps1","west",
-                 undefined,"Subscription ok."}}
+    {ok,{message,"subscription_succeeded","ps1","west",undefined,undefined}}
     (west@127.0.0.1)10>
     (west@127.0.0.1)10> west:pub(Pid, "ps1", "All").
     Event: {"u1",ps1,"All"}
     Args: ["Hello"]
     Event: {"u1",ps1,"All"}
     Args: ["Hello"]
-    {ok,{message,"publication_succeeded","ps1","west",undefined,
-                 "Message published."}}
+    {ok,{message,"publication_succeeded","ps1","west",undefined,undefined}}
     (west@127.0.0.1)11>
     (west@127.0.0.1)11> west:pub(Pid2, "ps1", "All").
     Event: {"u2",ps1,"All"}
     Args: ["Hello"]
     Event: {"u2",ps1,"All"}
     Args: ["Hello"]
-    {ok,{message,"publication_succeeded","ps1","west",undefined,
-                 "Message published."}}
+    {ok,{message,"publication_succeeded","ps1","west",undefined,undefined}}
     (west@127.0.0.1)12>
 
 Note that either `Pid` and `Pid2` received the published messages, both executed the callback function.

@@ -71,7 +71,7 @@ init([Arg, InitialState]) ->
             end,
     DistProps = case application:get_env(west, dist_props) of
                     {ok, Env1} -> Env1;
-                    _          -> [{n, 1}, {q, 1}]
+                    _          -> [{opts, [{n, 1}, {q, 1}]}]
                 end,
     case string:tokens(Arg#arg.pathinfo, "/") of
         [Key] ->

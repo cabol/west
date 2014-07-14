@@ -1,4 +1,4 @@
-.PHONY: deps rel
+.PHONY: all compile clean eunit test
 
 all: deps compile
 
@@ -10,6 +10,11 @@ deps:
 
 clean:
 	./rebar clean
+
+eunit:
+	./rebar skip_deps=true eunit
+
+test: eunit
 
 distclean: clean devclean relclean
 	./rebar delete-deps

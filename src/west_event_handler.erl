@@ -216,10 +216,9 @@ publish(ServerRef, ETag, Event, Msg) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec publish(dist_spec(), server_ref(), any(), key(), msg()) ->
-              {ok, key()} | {error, term()}.
+-spec publish(dist_spec(), server_ref(), any(), key(), msg()) -> ok.
 publish(DistSpec, ServerRef, ETag, Event, Msg) ->
-    gen_server:call(ServerRef, {publish_dist, DistSpec, ETag, Event, Msg}).
+    gen_server:cast(ServerRef, {publish_dist, DistSpec, ETag, Event, Msg}).
 
 %%--------------------------------------------------------------------
 %% @doc
