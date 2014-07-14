@@ -31,6 +31,7 @@
 
 %% API
 -export([start_link/3,
+         stop/1,
          reg/2,
          unreg/2,
          send/3,
@@ -68,6 +69,16 @@
                  {ok, pid()} | ignore | {error, term()}).
 start_link(Key, CallbackSpec, Opts) ->
     gen_server:start_link(?MODULE, [Key, CallbackSpec, Opts], []).
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Stops the gen_server.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec stop(server_ref()) -> ok.
+stop(ServerRef) ->
+    gen_server:cast(ServerRef, stop).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -160,7 +171,7 @@ init([Key, CallbackSpec, Opts]) ->
             end,
     DistProps = case application:get_env(west, dist_props) of
                     {ok, Env1} -> Env1;
-                    _          -> [{n, 1}, {q, 1}]
+                    _          -> [{opts, [{n, 1}, {q, 1}]}]
                 end,
     Name = west_utils:build_name([Key, self(), erlang:now()]),
     register(Name, self()),
@@ -243,6 +254,16 @@ handle_call({pub, Channel, Msg}, _From, #state{server=WS}=S) ->
     MsgSpec = ?MSG{id=undefined, channel=Channel, data=Msg},
     Reply = west_protocol_handler:handle_event(publish, MsgSpec, WS),
     {reply, Reply, S}.
+
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% Handling stop messages
+%%
+%% @end
+%%--------------------------------------------------------------------
+handle_cast(stop, State) ->
+    {stop, normal, State};
 
 %%--------------------------------------------------------------------
 %% @private

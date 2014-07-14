@@ -40,17 +40,17 @@
 %%%===================================================================
 
 %%--------------------------------------------------------------------
-%% @spec start_link(Args :: list()) -> {ok, pid()} |
-%%                                     ignore |
-%%                                     {error, Reason :: term()}
+%% @spec start_link(Args :: any()) -> {ok, pid()} |
+%%                                    ignore |
+%%                                    {error, Reason :: term()}
 %%
 %% @doc
 %% Starts the `WEST' supervisor.
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec start_link(list()) -> {ok, pid()} | {error, term()}.
-start_link(Args) when is_list(Args) ->
+-spec start_link(any()) -> {ok, pid()} | {error, term()}.
+start_link(Args) ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, [Args]).
 
 %%%===================================================================
@@ -67,7 +67,7 @@ start_link(Args) when is_list(Args) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
-init(Args) ->
+init([Args]) ->
     {ok, {{one_for_one, 5, 10}, process_specs(Args)}}.
 
 %%%===================================================================
@@ -110,15 +110,15 @@ process_specs(Args) ->
                    [VMaster, CmdFSM]
            end,
     Yaws = case Args of
-               undefined ->
-                   [];
                _ when is_list(Args) ->
                    Ybed_sup = {ybed_sup,
-                               {ybed_sup, start_link, Args},
+                               {ybed_sup, start_link, [Args]},
                                permanent,
                                2000,
                                supervisor,
                                [ybed_sup]},
-                   [Ybed_sup]
+                   [Ybed_sup];
+               _ ->
+                   []
            end,
     [EvHdlr_sup] ++ Dist ++ Yaws.

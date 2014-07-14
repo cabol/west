@@ -231,10 +231,10 @@ start_app_deps(App) when is_atom(App) ->
     case application:start(App) of
         {error, {not_started, Dep}} ->
             start_app_deps([Dep|[App]], []);
-        {error, {_, _}} ->
-            [App];
+        {error, {Reason, _}} ->
+            [{Reason, App}];
         ok ->
-            [App]
+            [{ok, App}]
     end.
 start_app_deps([]=_L, Acc) when is_list(_L) ->
     Acc;
@@ -242,10 +242,10 @@ start_app_deps([H|T]=L, Acc) when is_list(L) ->
     case application:start(H) of
         {error, {not_started, Dep}} ->
             start_app_deps([Dep|L], Acc);
-        {error, {_, _}} ->
-            start_app_deps(T, [H|Acc]);
+        {error, {Reason, _}} ->
+            start_app_deps(T, [{Reason, H}|Acc]);
         ok ->
-            start_app_deps(T, [H|Acc])
+            start_app_deps(T, [{ok, H}|Acc])
     end.
 
 %%%===================================================================

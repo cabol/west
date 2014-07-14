@@ -40,9 +40,19 @@ start() ->
     start(normal, []).
 
 start(_Type, _Args) ->
-    {ok, [[ConfigFile]]} = init:get_argument(config),
-    {ok, [Config]} = file:consult(ConfigFile),
-    Yaws = proplists:get_value(yaws, Config),
+    %% Get YAWS properties, if exist
+    Yaws = case init:get_argument(config) of
+               {ok, [[ConfigFile]]} ->
+                   case file:consult(ConfigFile) of
+                       {ok, [Config]} ->
+                           proplists:get_value(yaws, Config);
+                       _ ->
+                           undefined
+                   end;
+               _ ->
+                   undefined
+           end,
+    %% Start WEST
     case west_sup:start_link(Yaws) of
         {ok, Sup} ->
             start_riak_core(),
