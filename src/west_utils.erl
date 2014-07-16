@@ -263,3 +263,6 @@ bin_to_hex(<<>>, Acc) ->
     lists:reverse(Acc);
 bin_to_hex(<<C1:4, C2:4, Rest/binary>>, Acc) ->
     bin_to_hex(Rest, [hexdigit(C2), hexdigit(C1) | Acc]).
+
+integer_to_binary(I) ->
+    list_to_binary(integer_to_list(I)).
