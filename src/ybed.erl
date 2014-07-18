@@ -19,7 +19,7 @@ run(Args) ->
                          {listen, {127,0,0,1}},
                          {port, 8080},
                          {docroot, "./www"},
-                         {appmods, [{"west", west_yout}]},
+                         {appmods, [{"west", west_ws_endpoint}]},
                          {opaque, [{yapp_server_id, "yapp_west"},
                                    {bootstrap_yapps, "west"}]}];
                     {_, Sconf} ->

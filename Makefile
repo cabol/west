@@ -1,4 +1,4 @@
-.PHONY: all compile clean eunit test
+.PHONY: all deps compile clean eunit test rel
 
 all: deps compile
 
