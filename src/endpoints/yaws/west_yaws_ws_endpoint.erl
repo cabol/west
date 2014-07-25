@@ -26,42 +26,41 @@
 %%% @end
 %%% Created : 03. Oct 2013 9:57 AM
 %%%-------------------------------------------------------------------
--module(west_ws_endpoint).
+-module(west_yaws_ws_endpoint).
 
 %% API
 -export([out/1]).
 
--include_lib("stdlib/include/erl_bits.hrl").
--include_lib("stdlib/include/qlc.hrl").
--include_lib("yaws/include/yaws_api.hrl").
 -include("west.hrl").
 
 out(A) ->
     %% HTTP WebSocket handshake callback
+    Path = string:tokens(yaws_api:arg_pathinfo(A), "/"),
     case application:get_env(west, http_ws_handshake_callback) of
         {ok, {Mod, Fun}} when Mod =/= none, Fun =/= none ->
             ?LOG_INFO("apply(~p, ~p)~n", [Mod, Fun]),
             case apply(Mod, Fun, [A]) of
                 ok ->
-                    upgrade_http_to_websocket(A);
-                {Rc, Rp} when is_integer(Rc), is_list(Rp) ->
-                    [{status, Rc}, {html, iolist_to_binary(Rp)}];
+                    handle(Path, A);
+                {Rc, Rp} when is_integer(Rc), is_binary(Rp) ->
+                    [{status, Rc}, {html, Rp}];
                 _ ->
                     [{status, 401}, {html, <<>>}]
             end;
         _ ->
-            upgrade_http_to_websocket(A)
+            handle(Path, A)
     end.
 
-upgrade_http_to_websocket(A) ->
-    %% To use the extended version of the basic echo callback, add
-    %% 'extversion=true' in the query string.
-    CallbackMod = case yaws_api:queryvar(A, "protocol") of
-                      {ok, "text"} -> west_ws_text_protocol_handler;
-                      {ok, "pb"}   -> west_ws_pb_protocol_handler;
-                      _            -> west_ws_json_protocol_handler
-                  end,
+handle(["text", _Key], A) ->
+    upgrade_http_to_websocket(west_yaws_ws_text_handler, A);
+handle(["json", _Key], A) ->
+    upgrade_http_to_websocket(west_yaws_ws_json_handler, A);
+handle(["pb", _Key], A) ->
+    upgrade_http_to_websocket(west_yaws_ws_pb_handler, A);
+handle(_, _) ->
+    [{status, 404}, {html, <<>>}].
 
+upgrade_http_to_websocket(CallbackMod, A) ->
     %% To enable keepalive timer add 'keepalive=true' in the query string.
     KeepAlive = case yaws_api:queryvar(A, "keepalive") of
                     {ok, "true"} -> true;

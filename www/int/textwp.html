@@ -26,7 +26,7 @@
             var client = {
                 connect: function() {
                     var baseUri =
-                        "ws://" + $('wsHostPort').value + "/west/" + $('userId').value;
+                        "ws://" + window.location.host + "/websocket/text/" + $('userId').value;
                     this._ws = new WebSocket(baseUri +
                         "?protocol=" + "text" +
                         "&keepalive=" + $('keepalive').checked +
@@ -122,7 +122,7 @@
                     </div>
                     <div class="checkbox">
                         <label>
-                            <input id="keepalive" type="checkbox"> Enable keepalive timer
+                            <input id="keepalive" type="checkbox"> Enable keepalive timer (Optional)
                         </label>
                     </div>
                     <div class="form-group">
@@ -133,16 +133,14 @@
                 </br>
 
                 <form class="form-horizontal" role="form" id="conn">
-                    <div class="col-sm-2 form-group">
-                        <input type="text" class="form-control" id="userId" placeholder="Username">
-                    </div>
                     <div class="col-sm-4 form-group">
-                        <input type="text" class="form-control" id="wsHostPort" placeholder="Host[:Port] (ex.: localhost:8888)">
+                        <input type="text" class="form-control" id="userId" placeholder="Username (Enter any)">
                     </div>
-                    <label for="cA"></label>
                     <label for="cA"></label>
                     <button id="cA" class="btn btn-default btn-primary" type="submit" name="connect">Connect</button>
                 </form>
+
+                </br>
 
                 <div id="connected" class="hidden">
 
@@ -150,7 +148,6 @@
                         <div class="col-sm-10 form-group">
                             <input type="text" class="form-control" id="phrase" placeholder="Enter message">
                         </div>
-                        <label for="sendB"></label>
                         <label for="sendB"></label>
                         <button id="sendB" type="submit" class="btn btn-primary">Send</button>
                     </form>

@@ -20,7 +20,7 @@ distclean: clean devclean relclean
 	./rebar delete-deps
 
 rel: all
-	./rebar generate
+	./rebar skip_deps=true generate
 
 relclean:
 	rm -rf rel/west

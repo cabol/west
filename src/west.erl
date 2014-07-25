@@ -161,19 +161,10 @@ pub(ServerRef, Channel, Msg) ->
 %% @end
 %%--------------------------------------------------------------------
 init([Key, CallbackSpec, Opts]) ->
-    Dist = case application:get_env(west, dist) of
-               {ok, Env0} -> Env0;
-               _          -> west_dist
-           end,
-    Scope = case Dist of
-                gproc_dist -> g;
-                _          -> l
-            end,
-    DistProps = case application:get_env(west, dist_props) of
-                    {ok, Env1} -> Env1;
-                    _          -> [{opts, [{n, 1}, {q, 1}]}]
-                end,
-    Name = west_utils:build_name([Key, self(), erlang:now()]),
+    Dist      = application:get_env(west, dist, gproc),
+    Scope     = ?GPROC_SCOPE(Dist),
+    DistProps = application:get_env(west, dist_props, [{opts, [{n, 1}, {q, 1}]}]),
+    Name      = west_utils:build_name([Key, self(), erlang:now()]),
     register(Name, self()),
     Server = ?WEST_SERVER{name=Name,
                           key=Key,

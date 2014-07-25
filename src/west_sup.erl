@@ -30,7 +30,7 @@
 -behaviour(supervisor).
 
 %% Public API
--export([start_link/1]).
+-export([start_link/0]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -40,18 +40,18 @@
 %%%===================================================================
 
 %%--------------------------------------------------------------------
-%% @spec start_link(Args :: any()) -> {ok, pid()} |
-%%                                    ignore |
-%%                                    {error, Reason :: term()}
+%% @spec start_link() -> {ok, pid()} |
+%%                       ignore |
+%%                       {error, Reason :: term()}
 %%
 %% @doc
 %% Starts the `WEST' supervisor.
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec start_link(any()) -> {ok, pid()} | {error, term()}.
-start_link(Args) ->
-    supervisor:start_link({local, ?MODULE}, ?MODULE, [Args]).
+-spec start_link() -> {ok, pid()} | {error, term()}.
+start_link() ->
+    supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 %%%===================================================================
 %%% Supervisor Callbacks
@@ -67,8 +67,8 @@ start_link(Args) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
-init([Args]) ->
-    {ok, {{one_for_one, 5, 10}, process_specs(Args)}}.
+init([]) ->
+    {ok, {{one_for_one, 5, 10}, process_specs()}}.
 
 %%%===================================================================
 %%% Internal functions
@@ -81,8 +81,8 @@ init([Args]) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec process_specs(list()) -> [supervisor:child_spec()].
-process_specs(Args) ->
+-spec process_specs() -> [supervisor:child_spec()].
+process_specs() ->
     EvHdlr_sup = {west_event_handler_sup,
                   {west_event_handler_sup, start_link, []},
                   permanent,
@@ -90,9 +90,7 @@ process_specs(Args) ->
                   supervisor,
                   [west_event_handler_sup]},
     Dist = case application:get_env(west, dist) of
-               {ok, gproc_dist} ->
-                   [];
-               _ ->
+               {ok, west_dist} ->
                    VMaster = {west_dist_vnode_master,
                               {riak_core_vnode_master,
                                start_link,
@@ -107,18 +105,8 @@ process_specs(Args) ->
                              infinity,
                              supervisor,
                              [west_dist_cmd_fsm_sup]},
-                   [VMaster, CmdFSM]
-           end,
-    Yaws = case Args of
-               _ when is_list(Args) ->
-                   Ybed_sup = {ybed_sup,
-                               {ybed_sup, start_link, [Args]},
-                               permanent,
-                               2000,
-                               supervisor,
-                               [ybed_sup]},
-                   [Ybed_sup];
+                   [VMaster, CmdFSM];
                _ ->
                    []
            end,
-    [EvHdlr_sup] ++ Dist ++ Yaws.
+    [EvHdlr_sup] ++ Dist.
