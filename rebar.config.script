@@ -31,12 +31,12 @@ CFG3 = case os:getenv("WEST_YAWS") of
                       [{'CONFIG', CFG2}, {'DEPS', [yaws]}])
        end.
 CFG4 = case os:getenv("WEST_COWBOY") of
-           "true" ->
-               CFG3;
-           F when F=="false"; F==false ->
+           "false" ->
                Script(Priv,
                       "remove_deps.script",
-                      [{'CONFIG', CFG3}, {'DEPS', [cowboy]}])
+                      [{'CONFIG', CFG3}, {'DEPS', [cowboy]}]);
+           F when F=="true"; F==false ->
+               CFG3
        end.
 CFG5 = case os:getenv("WEST_ALL") of
            "true" ->

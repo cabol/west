@@ -11,7 +11,7 @@ A new way to build real-time and high scalable messaging-based applications, not
 Overview
 --------
 
-`WEST` (Web/Event-Driven Systems Tool) is a tool that enables the development of real-time, mission-critical and
+`WEST` (Web/Event-driven Systems Tool) is a tool that enables the development of real-time, mission-critical and
 messaging-based systems, [EDA](http://en.wikipedia.org/wiki/Event-driven_architecture) based systems, giving
 properties such as: massive concurrency, fault-tolerance, high scalability, high performance, and high availability.
 
@@ -25,12 +25,68 @@ P2P communication system.
 Dependencies
 ------------
 
-WEST uses some project as support infrastructure.
+WEST has main dependencies such as: `gproc`, `mochiweb`, and `protobuffs`. These dependencies are fetched by default.
+Due to WEST exposes a WebSocket API, `cowboy` dependency is fetched too, despite to be complementary (can be skip it if you want).
 
-* `gproc` as extended process dictionary and pub/sub infrastructure.
-* `riak_core` as distributed framework in order to scale out. With this distributed model, `gproc` runs locally
-  in each node, and `riak_core` is used to distribute the processes around the cluster.
-* `yaws` as web server, this provides the WebSockets infrastructure and Web Server.
+There are others complementary dependencies like `yaws` and `riak_core`. Since most people don't actively use either,
+they are no longer fetched by default, but they can be fetched on demand.
+
+To enable fetching complementary dependencies you must export the corresponding OS environment variable, depending on what
+dependency you want to fetch.
+
+* To enable fetching of `riak_core` and support distributed WEST, export the OS environment variable `WEST_DIST=true`.
+
+* To enable fetching of `yaws`, export the OS environment variable `WEST_YAWS=true`.
+
+* No need to do anything for `cowboy`, is fetched by default, instead if you want to skip it, export the OS environment variable
+  `WEST_COWBOY=false`.
+
+* For ease, if you want to fetch all dependencies, export the OS environment variable `WEST_ALL=true`.
+
+This can be done e.g. from a GNU Makefile, from shell (CLI), or editing your `.bash_profile` or `.bashrc` (Unix, Linux, Mac OSX).
+
+E.g. supposing that you want to set the OS variables permanently, in your home directory, edit `.bashrc` or `.bash_profile`
+to add these lines:
+
+    ```
+    export WEST_DIST=true
+    export WEST_YAWS=true
+    export WEST_COWBOY=false
+    ```
+
+
+
+Introduction
+------------
+
+WEST is a simple and lightweight tool to build event-based systems, which provides a number of useful features:
+
+* WEST serves as base or core to build distributed highly-scalable event-based systems. Provides messaging patterns
+  like Pub/Sub and Req/Rep, supports horizontal scaling (implements sharding topology), and is built to support
+  massive concurrency (relies on Erlang, and other robust apps like Gproc, Riak Core, YAWS, Cowboy).
+
+* WEST can be easily embedded within another larger Erlang application. In this case, larger Erlang Apps should use WEST native
+  client (fine-grained interface), instead of WebSocket API (coarse-grained interface), so you can skip the Web Server dependency.
+
+* WEST provides a coarse-grained interface via WebSockets in order that can be used by external applications, no matter
+  the platform or programming language. So you can integrate applications written in any language (C/C++, Java, CSharp, Python,
+  Ruby, JavaScript, etc.) with WEST.
+
+* WEST is flexible, you can add or remove pieces as you need.
+
+* WEST provides two Web Server options: [Cowboy](http://ninenines.eu) or [YAWS](http://yaws.hyber.org).
+
+About the infrastructure used by WEST:
+
+* `gproc` (process dictionary for Erlang) serves as messaging infrastructure. WEST implements messaging patterns like Pub/Sub
+  and Req/Rep using `gproc`.
+
+* `riak_core` is used by WEST to run in distributed way. In this case, `gproc` runs locally on each node, and with
+  `riak_core` WEST creates a Sharding topology, storing data records (channel keys in this case) across multiple
+  gproc instances. Optionally, you can also configure more advanced topologies like Sharding + Peer-To-Peer Replication (like Riak).
+  WEST runs by default with replication factor 1.
+
+* `cowboy` or `yaws` serves as web server, in order to provide WebSockets infrastructure mainly.
 
 
 
@@ -42,6 +98,38 @@ Assuming you have a working Erlang (R16B02 or later) installation, building WEST
         $ git clone https://github.com/cabolanos/west.git
         $ cd west
         $ make rel
+
+* Note: remember set the OS variables that you need before to build WEST in order to fetch the necessary dependencies (check
+  dependencies section above).
+
+
+
+Configuring WEST
+----------------
+
+Once you have built WEST, a folder `west` (your build) is created within `rel` folder (`./rel/west`), with this structure:
+
+    ```
+    .
+    |__rel
+       |__west
+          |__bin
+             |__west
+             |__west-admin
+          |__etc
+             |__app.config
+             |__vm.args
+          ...
+    ```
+
+In your build `rel/west` you'll find:
+
+* `/etc/app.config`: This file contains configuration for WEST and support applications (Riak Core, Cowboy, Yaws, Sasl).
+  If you need to change default configuration, this is the file that you need to modify.
+* `/etc/vm.args`: This file contains the arguments that are passed to Erlang VM when is executed. If you need to add or
+  modify VM arguments, this is he file to do it.
+* `/bin/west`: WEST executable.
+* `/bin/west-admin`: WEST admin executable.
 
 
 
@@ -64,14 +152,29 @@ WEST process.
 You can use `west` from web client ([http://localhost:8080](http://localhost:8080)) or directly with Erlang
 `west` module. See below the different ways to use it and test it.
 
+* Note: WEST doesn't runs in distributed fashion by default, it runs locally in each node and just relies on Gproc.
+  If you want to run distributed WEST, you will need `riak_core` dependency, and you must change `dist` property
+  (from `gproc` to `west_dist`) in `etc/app.config` (WEST section):
+  
+    ```erlang
+    {west, [
+            {dist, west_dist}
+            ...
+           ]
+    }    
+    ```
+
 
 
 Distributed WEST
 ----------------
 
-The application `west` is distributed by nature, and its distribution model resides on `riak_core` as distributed
+The application `west` is distributed by nature, and its distribution model relies on `riak_core` as distributed
 framework to balance the requests around the cluster, and `gproc` that runs locally on each node and provides the
 extended process dictionary and messaging patterns (point-to-point and publish-subscribe).
+
+* Note: To run WEST in distributed fashion you need `riak_core` dependency. Therefore, when you built WEST you
+  should have set the OS variable `WEST_DIST=true`.
 
 
 ### Build the devrel ###
@@ -115,7 +218,7 @@ WEST contains a web user interface, in order to provide to the users a simple wa
 You can open a tab in your browser and set the URL `http://host:port/index.html`. You can use this
 web client to work with `west`. In the page are instructions to get started.
 
-Note that the `host` and `port` are the same of `yaws`, and you can find them in the `/etc/app.config` file,
+Note that the `host` and `port` are Web Server properties, and you can find them in the `/etc/app.config` file,
 if you want to change them.
 
 If you ran `west` in single node, from `./rel/west/bin`, you can try:
@@ -123,8 +226,8 @@ If you ran `west` in single node, from `./rel/west/bin`, you can try:
 
 ### Note ###
 
-If you are running `west` in cluster, and you have several instances of `yaws` listen in different
-`host:port`, you can open several browser TABs, pointing to different `west` instances, ex.: some tabs
+If you are running `west` in cluster, and you have several instances of Web Server listen in different
+`host:port`, you can open several browser TABs, pointing to different `west` instances, e.g.: some tabs
 to `http://HostX:PortX/index.html`, others to `http://HostY:PortY/index.html`, and in this way to others
 (is like a manual HTTP load balancing).
 
@@ -135,10 +238,10 @@ Now you can try:
 
 
 
-WEST Erlang Client
+WEST Native Client
 ------------------
 
-Is possible interact with `west` in programmatic way with Erlang using the Erlang `west` module.
+Is possible interact with `west` in programmatic way with Erlang using the native `west` module.
 
     $ ./rel/west/bin/west console
     (west@127.0.0.1)1> F = fun(Event, Args) -> io:format("Event: ~p~nArgs: ~p~n", [Event, Args]) end.
@@ -201,11 +304,11 @@ Note that either `Pid` and `Pid2` received the published messages, both executed
 
 
 
-WEST with gproc_dist
+WEST with GPROC_DIST
 --------------------
 
-WEST has other way to run in cluster, supported on `gproc_dist`, this is using the `gproc` distributed
-model based on `gen_leader`.
+WEST has other way to run in cluster, supported on `gproc_dist`, which consists in using `gproc` distributed
+model based on `gen_leader` (see [Gproc](https://github.com/uwiger/gproc)).
 
 1. You need to modify the `/etc/app.config` file:
 
@@ -231,7 +334,7 @@ model based on `gen_leader`.
         (west1@127.0.0.1)2> rpc:multicall(application, start, [gproc]).
         {[ok,ok,ok],[]}
 
-However, is recommended run `west` distributed in default way, with `gproc` local and `riak_core` support.
+However, is recommended run `west` in distributed fashion with `gproc` local and `riak_core` support.
 
 
 
@@ -241,10 +344,6 @@ Implementation Notes
 ### Top-level layers view ###
 
 ![LayerArch](./doc/assets/west_arch_layer_view.png)
-
-### Overview of supervision ###
-
-![WestProcTree](./doc/assets/west_proc_tree.png)
 
 
 
