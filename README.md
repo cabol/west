@@ -11,14 +11,47 @@ A new way to build real-time and high scalable messaging-based applications, not
 Overview
 --------
 
-`WEST` (Web/Event-driven Systems Tool) is a tool that enables the development of real-time, mission-critical and
-messaging-based systems, [EDA](http://en.wikipedia.org/wiki/Event-driven_architecture) based systems, giving
-properties such as: massive concurrency, fault-tolerance, high scalability, high performance, and high availability.
+`WEST` is a simple and lightweight tool that enables easy development of distributed highly-scalable event-based systems,
+[EDA](http://en.wikipedia.org/wiki/Event-driven_architecture) based systems, giving properties such as: massive concurrency,
+fault-tolerance, horizontal scaling, high performance, and high availability. `WEST` breaks the traditional messaging systems
+with centralized model (Broker, ESB, MoM, etc.), implementing a real P2P communication system.
 
-`WEST` is written in `Erlang/OTP`, enables messaging patterns like Pub/Sub and Request/Reply. Also comes with a
-WebSockets API and different protocols options such as: JSON, Text and Protocol Buffers, in order to interact with it.
-`WEST` breaks the traditional messaging systems with centralized model (Broker, ESB, MoM, etc.), implementing a real
-P2P communication system.
+`WEST` provides a number of useful features:
+
+* Relies on remarkable, top notch and mature projects such as: [Gproc](https://github.com/uwiger/gproc), [Riak Core](https://github.com/basho/riak_core),
+  [YAWS](http://yaws.hyber.org) / [Cowboy](http://ninenines.eu).
+
+* Messaging patterns like Pub/Sub and Req/Rep.
+
+* Provides an Erlang native client (fine-grained interface). This is useful if you want to run WEST embedded within another
+  larger Erlang application. In this case, larger Erlang Apps should consume the native client instead of WebSocket API.
+
+* Provides a coarse-grained interface via WebSockets in order that can be used by external applications, no matter the
+  platform or programming language. You can integrate applications written in any language (C/C++, Java, CSharp, Python,
+  Ruby, JavaScript, etc.) with WEST.
+
+* WebSocket API comes with different protocols options such as: JSON, Text and Protocol Buffers.
+
+* Provides two options to run in distributed fashion: 1) `west_dist` (Gproc + Riak Core) that implements a sharding topology
+  enabling horizontal scaling and linear growth. 2) `gproc_dist` (Gproc global + [gen_leader](https://github.com/garret-smith/gen_leader_revival)).
+
+* Also can run in a simpler way, local in a single node (this is the default behavior). In his case you don't need `riak_core`.
+
+* WEST is flexible, you can add or remove pieces as you need.
+
+* WEST provides two Web Server options: [Cowboy](http://ninenines.eu) or [YAWS](http://yaws.hyber.org).
+
+About the infrastructure used by WEST:
+
+* `gproc` (process dictionary for Erlang) serves as messaging infrastructure. WEST implements messaging patterns like Pub/Sub
+  and Req/Rep using `gproc`.
+
+* `riak_core` is used by WEST to run in distributed way. In this case, `gproc` runs locally on each node, and with
+  `riak_core` WEST creates a Sharding topology, storing data records (channel keys in this case) across multiple
+  gproc instances. Optionally, you can also configure more advanced topologies like Sharding + Peer-To-Peer Replication (like Riak).
+  WEST runs by default with replication factor 1.
+
+* `cowboy` or `yaws` serves as web server, in order to provide WebSockets infrastructure mainly.
 
 
 
@@ -43,7 +76,7 @@ dependency you want to fetch.
 
 * For ease, if you want to fetch all dependencies, export the OS environment variable `WEST_ALL=true`.
 
-This can be done e.g. from a GNU Makefile, from shell (CLI), or editing your `.bash_profile` or `.bashrc` (Unix, Linux, Mac OSX).
+This can be done e.g. from a GNU Makefile, from shell (CLI), or editing your `.bash_profile`/`.bashrc` (Unix, Linux, Mac OSX).
 
 E.g. supposing that you want to set the OS variables permanently, in your home directory, edit `.bashrc` or `.bash_profile`
 to add these lines:
@@ -51,40 +84,6 @@ to add these lines:
     export WEST_DIST=true
     export WEST_YAWS=true
     export WEST_COWBOY=false
-
-
-
-Introduction
-------------
-
-WEST is a simple and lightweight tool to build event-based systems, which provides a number of useful features:
-
-* WEST serves as base or core to build distributed highly-scalable event-based systems. Provides messaging patterns
-  like Pub/Sub and Req/Rep, supports horizontal scaling (implements sharding topology), and is built to support
-  massive concurrency (relies on Erlang, and other robust apps like Gproc, Riak Core, YAWS, Cowboy).
-
-* WEST can be easily embedded within another larger Erlang application. In this case, larger Erlang Apps should use WEST native
-  client (fine-grained interface), instead of WebSocket API (coarse-grained interface), so you can skip the Web Server dependency.
-
-* WEST provides a coarse-grained interface via WebSockets in order that can be used by external applications, no matter
-  the platform or programming language. So you can integrate applications written in any language (C/C++, Java, CSharp, Python,
-  Ruby, JavaScript, etc.) with WEST.
-
-* WEST is flexible, you can add or remove pieces as you need.
-
-* WEST provides two Web Server options: [Cowboy](http://ninenines.eu) or [YAWS](http://yaws.hyber.org).
-
-About the infrastructure used by WEST:
-
-* `gproc` (process dictionary for Erlang) serves as messaging infrastructure. WEST implements messaging patterns like Pub/Sub
-  and Req/Rep using `gproc`.
-
-* `riak_core` is used by WEST to run in distributed way. In this case, `gproc` runs locally on each node, and with
-  `riak_core` WEST creates a Sharding topology, storing data records (channel keys in this case) across multiple
-  gproc instances. Optionally, you can also configure more advanced topologies like Sharding + Peer-To-Peer Replication (like Riak).
-  WEST runs by default with replication factor 1.
-
-* `cowboy` or `yaws` serves as web server, in order to provide WebSockets infrastructure mainly.
 
 
 
@@ -123,7 +122,7 @@ In your build `rel/west` you'll find:
 * `/etc/app.config`: This file contains configuration for WEST and support applications (Riak Core, Cowboy, Yaws, Sasl).
   If you need to change default configuration, this is the file that you need to modify.
 * `/etc/vm.args`: This file contains the arguments that are passed to Erlang VM when is executed. If you need to add or
-  modify VM arguments, this is he file to do it.
+  modify VM arguments, this is the place to do it.
 * `/bin/west`: WEST executable.
 * `/bin/west-admin`: WEST admin executable.
 
@@ -201,7 +200,7 @@ and test it.
 
 NOTE: If you don't want to run WEST as daemons, alternatively, you can start each vnode from the console
 (instead of `west attach`). Open tree instances of console and run each WEST vnode respectively.
-
+    
     $ ./dev/dev#/bin/west console
 
 
