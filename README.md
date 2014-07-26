@@ -48,11 +48,9 @@ This can be done e.g. from a GNU Makefile, from shell (CLI), or editing your `.b
 E.g. supposing that you want to set the OS variables permanently, in your home directory, edit `.bashrc` or `.bash_profile`
 to add these lines:
 
-    ```
     export WEST_DIST=true
     export WEST_YAWS=true
     export WEST_COWBOY=false
-    ```
 
 
 
@@ -109,7 +107,6 @@ Configuring WEST
 
 Once you have built WEST, a folder `west` (your build) is created within `rel` folder (`./rel/west`), with this structure:
 
-    ```
     .
     |__rel
        |__west
@@ -120,7 +117,6 @@ Once you have built WEST, a folder `west` (your build) is created within `rel` f
              |__app.config
              |__vm.args
           ...
-    ```
 
 In your build `rel/west` you'll find:
 
