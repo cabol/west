@@ -64,6 +64,12 @@
 -define(LOG_WARNING(Format, Vars),
     error_logger:warning_msg(Format, Vars)).
 
+-define(GPROC_SCOPE(X),
+    case X of
+        gproc_dist -> g;
+        _          -> l
+    end).
+
 -define(N, 3).
 -define(R, 2).
 -define(W, 2).

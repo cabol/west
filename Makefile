@@ -1,4 +1,4 @@
-.PHONY: all compile clean eunit test
+.PHONY: all deps compile clean eunit test rel
 
 all: deps compile
 
@@ -20,7 +20,7 @@ distclean: clean devclean relclean
 	./rebar delete-deps
 
 rel: all
-	./rebar generate
+	./rebar skip_deps=true generate
 
 relclean:
 	rm -rf rel/west

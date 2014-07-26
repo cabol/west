@@ -51,8 +51,6 @@
 %% API
 -export([cmd/3]).
 
--include_lib("riak_core/include/riak_core_vnode.hrl").
-
 %% VNode State
 -record(state, {partition, machine_id, last_timestamp}).
 

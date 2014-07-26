@@ -24,8 +24,62 @@
             }
             // Initialize ProtoBuf.js
             var ProtoBuf = dcodeIO.ProtoBuf;
-            var Builder = ProtoBuf.loadProtoFile("../assets/files/west_msg.proto");
-            var WestMsg = ProtoBuf.loadProtoFile("../assets/files/west_msg.proto").build("Message");
+            //var Builder = ProtoBuf.loadProtoFile("../assets/files/west_msg.proto");
+            //var WestMsg = ProtoBuf.loadProtoFile("../assets/files/west_msg.proto").build("Message");
+            //var builder = ProtoBuf.loadJsonFile("../assets/files/messages.json");
+            //var West = builder.build("West");
+            //var WestMsg = West.Messages.Message;
+
+            // Create WEST Message proto
+            var builder = ProtoBuf.newBuilder();
+            builder.define("West");
+            builder.create([
+            {
+                "name": "Message",
+                "fields": [
+                    {
+                        "rule": "required",
+                        "options": {},
+                        "type": "string",
+                        "name": "event",
+                        "id": 1
+                    },
+                    {
+                        "rule": "optional",
+                        "options": {},
+                        "type": "string",
+                        "name": "channel",
+                        "id": 2
+                    },
+                    {
+                        "rule": "optional",
+                        "options": {},
+                        "type": "string",
+                        "name": "from",
+                        "id": 3
+                    },
+                    {
+                        "rule": "optional",
+                        "options": {},
+                        "type": "string",
+                        "name": "id",
+                        "id": 4
+                    },
+                    {
+                        "rule": "optional",
+                        "options": {},
+                        "type": "bytes",
+                        "name": "data",
+                        "id": 5
+                    }
+                ]
+            }
+            ]);
+            builder.reset();
+
+            var West = builder.build("West");
+            var WestMsg = West.Message;
+
 
             if (!window.WebSocket)
                 alert("WebSocket not supported by this browser");
@@ -38,7 +92,7 @@
             var client = {
                 connect: function() {
                     var baseUri =
-                        "ws://" + $('wsHostPort').value + "/west/" + $('userId').value;
+                        "ws://" + window.location.host + "/websocket/pb/" + $('userId').value;
                     this._ws = new WebSocket(baseUri +
                         "?protocol=" + "pb" +
                         "&keepalive=" + $('keepalive').checked +
@@ -127,7 +181,7 @@
                     </div>
                     <div class="checkbox">
                         <label>
-                            <input id="keepalive" type="checkbox"> Enable keepalive timer
+                            <input id="keepalive" type="checkbox"> Enable keepalive timer (Optional)
                         </label>
                     </div>
                     <div class="form-group">
@@ -138,13 +192,9 @@
                 </br>
 
                 <form class="form-horizontal" role="form" id="conn">
-                    <div class="col-sm-2 form-group">
-                        <input type="text" class="form-control" id="userId" placeholder="Username">
-                    </div>
                     <div class="col-sm-4 form-group">
-                        <input type="text" class="form-control" id="wsHostPort" placeholder="Host[:Port] (ex.: localhost:8888)">
+                        <input type="text" class="form-control" id="userId" placeholder="Username (Enter any)">
                     </div>
-                    <label for="cA"></label>
                     <label for="cA"></label>
                     <button id="cA" class="btn btn-default btn-primary" type="submit" name="connect">Connect</button>
                 </form>

@@ -35,7 +35,6 @@
 -export([get_dbg_preflist/2, get_dbg_preflist/3]).
 
 -include("west.hrl").
--include_lib("riak_core/include/riak_core_vnode.hrl").
 
 -define(TIMEOUT, 5000).
 

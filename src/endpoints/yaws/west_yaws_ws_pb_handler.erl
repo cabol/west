@@ -29,7 +29,7 @@
 %%% @end
 %%% Created : 13. Apr 2014 12:26 PM
 %%%-------------------------------------------------------------------
--module(west_ws_pb_protocol_handler).
+-module(west_yaws_ws_pb_handler).
 
 %% Export for websocket callbacks
 -export([init/1,
@@ -41,9 +41,8 @@
 %% Callback
 -export([ev_callback/2]).
 
--include_lib("yaws/include/yaws_api.hrl").
 -include("west.hrl").
--include("west_protocol.hrl").
+-include("../../west_protocol.hrl").
 
 -record(state, {server=?WEST_SERVER{}, nb_texts=0, nb_bins=0}).
 
@@ -61,20 +60,11 @@
 %%--------------------------------------------------------------------
 init([Arg, InitialState]) ->
     ?LOG_INFO("Initalize ~p: ~p~n", [self(), InitialState]),
-    Dist = case application:get_env(west, dist) of
-               {ok, Env0} -> Env0;
-               _          -> west_dist
-           end,
-    Scope = case Dist of
-                gproc_dist -> g;
-                _          -> l
-            end,
-    DistProps = case application:get_env(west, dist_props) of
-                    {ok, Env1} -> Env1;
-                    _          -> [{opts, [{n, 1}, {q, 1}]}]
-                end,
-    case string:tokens(Arg#arg.pathinfo, "/") of
-        [Key] ->
+    Dist      = application:get_env(west, dist, gproc),
+    Scope     = ?GPROC_SCOPE(Dist),
+    DistProps = application:get_env(west, dist_props, [{opts, [{n, 1}, {q, 1}]}]),
+    case string:tokens(yaws_api:arg_pathinfo(Arg), "/") of
+        [_, Key] ->
             Name = west_utils:build_name([Key, self(), erlang:now()]),
             register(Name, self()),
             CbSpec = {?MODULE, ev_callback, [{Name, node()}, undefined]},
@@ -159,7 +149,7 @@ handle_message({binary, Msg},
 %%--------------------------------------------------------------------
 handle_message({text, Msg}, #state{nb_texts=N}=State) ->
     ?LOG_INFO("Received text msg (N=~p): ~p bytes~n", [N, byte_size(Msg)]),
-    {reply, {text, <<"Bad encoding.">>}, State#state{nb_bins=N+1}};
+    {reply, {text, <<"bad_encoding">>}, State#state{nb_bins=N+1}};
 
 %%--------------------------------------------------------------------
 %% @doc

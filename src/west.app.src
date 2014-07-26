@@ -1,9 +1,9 @@
 {application, west,
  [
   {description, "west"},
-  {vsn, "0.1.1"},
+  {vsn, "0.1.2"},
   {registered, []},
-  {applications, [kernel, stdlib, gproc, riak_core]},
+  {applications, [kernel, stdlib, crypto, gproc]},
   {mod, {west_app, []}},
   {env, []}
  ]
