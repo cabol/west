@@ -118,7 +118,7 @@ cmd(PrefList, ReqID, CallbackSpec) ->
 %% @end
 %%--------------------------------------------------------------------
 init([Partition]) ->
-    TS = erlang:now(),
+    TS = os:timestamp(),
     %% This could get ugly if you expect them to be unique across data
     %% centers, or if you have more than 1024 partitions
     <<MachineID:10/bits, _Rest/bits>> = <<Partition:160/integer>>,

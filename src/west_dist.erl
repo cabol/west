@@ -184,9 +184,9 @@ wait_for_reqid(ReqID, Timeout) ->
         {_Code, ReqID, Reply} ->
             case is_list(Reply) of
                 true ->
-                    case proplists:get_value(ok, Reply) of
-                        undefined -> lists:last(Reply);
-                        Val       -> Val
+                    case lists:keyfind(ok, 1, Reply) of
+                        {_, V} -> V;
+                        _      -> lists:last(Reply)
                     end;
                 _ ->
                     Reply

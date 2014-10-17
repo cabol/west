@@ -202,8 +202,8 @@ cmd(Bucket, Key, Op, Val, Opts) ->
 %% @end
 %%--------------------------------------------------------------------
 init([ReqID, From, Bucket, Key, Op, Val, Opts]) ->
-    Q = proplists:get_value(q, Opts, ?W),
-    N = proplists:get_value(n, Opts, ?N),
+    Q = west_utils:keyfind(q, Opts, ?W),
+    N = west_utils:keyfind(n, Opts, ?N),
     SD = #state{req_id=ReqID,
                 from=From,
                 bkey={Bucket, Key},
@@ -331,7 +331,7 @@ terminate(_Reason, _SN, _SD) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
-mk_reqid() -> erlang:phash2(erlang:now()).
+mk_reqid() -> erlang:phash2(os:timestamp()).
 
 %%--------------------------------------------------------------------
 %% @private

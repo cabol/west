@@ -80,7 +80,7 @@ stop({Pids, Apps}) ->
 
 t_west_reg({Pids, _}) ->
     %% register Pid1
-    Pid1 = proplists:get_value(1, Pids),
+    Pid1 = west_utils:keyfind(1, Pids),
     {ok, {message, Res0, Ch0, _, _, _}} = west:reg(Pid1, "r1"),
     ?assertEqual("registration_succeeded", Res0),
     ?assertEqual("r1", Ch0),
@@ -88,7 +88,7 @@ t_west_reg({Pids, _}) ->
     ?assertEqual("registration_already_exist", Res1),
     ?assertEqual("r1", Ch1),
     %% register Pid2
-    Pid2 = proplists:get_value(2, Pids),
+    Pid2 = west_utils:keyfind(2, Pids),
     {ok, {message, Res2, Ch2, _, _, _}} = west:reg(Pid2, "r2"),
     ?assertEqual("registration_succeeded", Res2),
     ?assertEqual("r2", Ch2),
@@ -96,14 +96,14 @@ t_west_reg({Pids, _}) ->
     ?assertEqual("registration_denied", Res2a),
     ?assertEqual("r1", Ch2a),
     %% register Pid3
-    Pid3 = proplists:get_value(3, Pids),
+    Pid3 = west_utils:keyfind(3, Pids),
     {ok, {message, Res3, Ch3, _, _, _}} = west:reg(Pid3, "r3"),
     ?assertEqual("registration_succeeded", Res3),
     ?assertEqual("r3", Ch3).
 
 t_west_send({Pids, _}) ->
     %% send msg from Pid1 to 'r1' channel
-    Pid1 = proplists:get_value(1, Pids),
+    Pid1 = west_utils:keyfind(1, Pids),
     {ok, {message, Res0, Ch0, _, _, _}} = west:send(Pid1, "r1", "M11"),
     ?assertEqual("sending_succeeded", Res0),
     ?assertEqual("r1", Ch0),
@@ -122,7 +122,7 @@ t_west_send({Pids, _}) ->
     [{_, M12}] = ets:lookup(west_test, west_utils:build_name(["u1", "M12"])),
     ?assertEqual("M12", M12),
     %% send msg from Pid2 to 'r3' channel
-    Pid2 = proplists:get_value(2, Pids),
+    Pid2 = west_utils:keyfind(2, Pids),
     {ok, {message, Res3, Ch3, _, _, _}} = west:send(Pid2, "r3", "M23"),
     ?assertEqual("sending_succeeded", Res3),
     ?assertEqual("r3", Ch3),
@@ -130,7 +130,7 @@ t_west_send({Pids, _}) ->
     [{_, M23}] = ets:lookup(west_test, west_utils:build_name(["u2", "M23"])),
     ?assertEqual("M23", M23),
     %% send msg from Pid3 to 'r1' channel
-    Pid3 = proplists:get_value(3, Pids),
+    Pid3 = west_utils:keyfind(3, Pids),
     {ok, {message, Res4, Ch4, _, _, _}} = west:send(Pid3, "r1", "M31"),
     ?assertEqual("sending_succeeded", Res4),
     ?assertEqual("r1", Ch4),
@@ -147,7 +147,7 @@ t_west_send({Pids, _}) ->
 
 t_west_unreg({Pids, _}) ->
     %% unregister Pid1
-    Pid1 = proplists:get_value(1, Pids),
+    Pid1 = west_utils:keyfind(1, Pids),
     {ok, {message, Res0, Ch0, _, _, _}} = west:unreg(Pid1, "r1"),
     ?assertEqual("unregistration_succeeded", Res0),
     ?assertEqual("r1", Ch0),
@@ -159,12 +159,12 @@ t_west_unreg({Pids, _}) ->
     ?assertEqual("registration_not_found", Res2),
     ?assertEqual("r1", Ch2),
     %% send msg from Pid2 to 'r1' channel
-    Pid2 = proplists:get_value(2, Pids),
+    Pid2 = west_utils:keyfind(2, Pids),
     {ok, {message, Res3, Ch3, _, _, _}} = west:send(Pid2, "r1", "M211"),
     ?assertEqual("registration_not_found", Res3),
     ?assertEqual("r1", Ch3),
     %% send msg from Pid3 to 'r1' channel
-    Pid3 = proplists:get_value(3, Pids),
+    Pid3 = west_utils:keyfind(3, Pids),
     {ok, {message, Res4, Ch4, _, _, _}} = west:send(Pid3, "r1", "M311"),
     ?assertEqual("registration_not_found", Res4),
     ?assertEqual("r1", Ch4),
@@ -189,7 +189,7 @@ t_west_unreg({Pids, _}) ->
 
 t_west_sub({Pids, _}) ->
     %% sub Pid1
-    Pid1 = proplists:get_value(1, Pids),
+    Pid1 = west_utils:keyfind(1, Pids),
     {ok, {message, Res0, Ch0, _, _, _}} = west:sub(Pid1, "ps1"),
     ?assertEqual("subscription_succeeded", Res0),
     ?assertEqual("ps1", Ch0),
@@ -197,7 +197,7 @@ t_west_sub({Pids, _}) ->
     ?assertEqual("subscription_already_exist", Res1),
     ?assertEqual("ps1", Ch1),
     %% sub Pid2
-    Pid2 = proplists:get_value(2, Pids),
+    Pid2 = west_utils:keyfind(2, Pids),
     {ok, {message, Res2, Ch2, _, _, _}} = west:sub(Pid2, "ps1"),
     ?assertEqual("subscription_succeeded", Res2),
     ?assertEqual("ps1", Ch2),
@@ -205,7 +205,7 @@ t_west_sub({Pids, _}) ->
     ?assertEqual("subscription_succeeded", Res3),
     ?assertEqual("ps2", Ch3),
     %% sub Pid3
-    Pid3 = proplists:get_value(3, Pids),
+    Pid3 = west_utils:keyfind(3, Pids),
     {ok, {message, Res4, Ch4, _, _, _}} = west:sub(Pid3, "ps1"),
     ?assertEqual("subscription_succeeded", Res4),
     ?assertEqual("ps1", Ch4),
@@ -218,7 +218,7 @@ t_west_sub({Pids, _}) ->
 
 t_west_pub({Pids, _}) ->
     %% pub msg from Pid1 to 'ps1' channel
-    Pid1 = proplists:get_value(1, Pids),
+    Pid1 = west_utils:keyfind(1, Pids),
     {ok, {message, Res0, Ch0, _, _, _}} = west:pub(Pid1, "ps1", "U1PS1"),
     ?assertEqual("publication_succeeded", Res0),
     ?assertEqual("ps1", Ch0),
@@ -231,7 +231,7 @@ t_west_pub({Pids, _}) ->
     timer:sleep(100),
     ?assertEqual(2, length(ets:lookup(west_test, west_utils:build_name(["u1", "U1PS2"])))),
     %% pub msg from Pid2 to 'ps3' channel
-    Pid2 = proplists:get_value(2, Pids),
+    Pid2 = west_utils:keyfind(2, Pids),
     {ok, {message, Res2, Ch2, _, _, _}} = west:pub(Pid2, "ps3", "U2PS3"),
     ?assertEqual("publication_succeeded", Res2),
     ?assertEqual("ps3", Ch2),
@@ -245,7 +245,7 @@ t_west_pub({Pids, _}) ->
     timer:sleep(100),
     ?assertEqual(3, length(ets:lookup(west_test, west_utils:build_name(["u2", "U2PS1"])))),
     %% pub msg from Pid3 to 'ps1' channel
-    Pid3 = proplists:get_value(3, Pids),
+    Pid3 = west_utils:keyfind(3, Pids),
     {ok, {message, Res4, Ch4, _, _, _}} = west:pub(Pid3, "ps1", "U3PS1"),
     ?assertEqual("publication_succeeded", Res4),
     ?assertEqual("ps1", Ch4),
@@ -267,7 +267,7 @@ t_west_pub({Pids, _}) ->
 
 t_west_unsub({Pids, _}) ->
     %% unsub Pid3 from 'ps1'
-    Pid3 = proplists:get_value(3, Pids),
+    Pid3 = west_utils:keyfind(3, Pids),
     {ok, {message, Res0, Ch0, _, _, _}} = west:unsub(Pid3, "ps1"),
     ?assertEqual("unsubscription_succeeded", Res0),
     ?assertEqual("ps1", Ch0),
@@ -291,7 +291,7 @@ t_west_unsub({Pids, _}) ->
     timer:sleep(100),
     ?assertEqual(1, length(ets:lookup(west_test, west_utils:build_name(["u3", "U3PS21"])))),
     %% unsub Pid2 from 'ps1'
-    Pid2 = proplists:get_value(2, Pids),
+    Pid2 = west_utils:keyfind(2, Pids),
     {ok, {message, Res5, Ch5, _, _, _}} = west:unsub(Pid2, "ps1"),
     ?assertEqual("unsubscription_succeeded", Res5),
     ?assertEqual("ps1", Ch5),
@@ -307,7 +307,7 @@ t_west_unsub({Pids, _}) ->
 
 t_west_pub2({Pids, _}) ->
     %% pub msg from Pid3 to 'ps1' channel
-    Pid3 = proplists:get_value(3, Pids),
+    Pid3 = west_utils:keyfind(3, Pids),
     {ok, {message, Res0, Ch0, _, _, _}} = west:pub(Pid3, "ps1", "U3PS12"),
     ?assertEqual("publication_succeeded", Res0),
     ?assertEqual("ps1", Ch0),
@@ -315,7 +315,7 @@ t_west_pub2({Pids, _}) ->
     [{_, U3PS12}] = ets:lookup(west_test, west_utils:build_name(["u3", "U3PS12"])),
     ?assertEqual("U3PS12", U3PS12),
     %% pub msg from Pid1 to 'ps2' channel
-    Pid1 = proplists:get_value(1, Pids),
+    Pid1 = west_utils:keyfind(1, Pids),
     {ok, {message, Res1, Ch1, _, _, _}} = west:pub(Pid1, "ps2", "U1PS22"),
     ?assertEqual("publication_succeeded", Res1),
     ?assertEqual("ps2", Ch1),
@@ -323,7 +323,7 @@ t_west_pub2({Pids, _}) ->
     [{_, U1PS22}] = ets:lookup(west_test, west_utils:build_name(["u1", "U1PS22"])),
     ?assertEqual("U1PS22", U1PS22),
     %% pub msg from Pid2 to 'ps3' channel
-    Pid2 = proplists:get_value(2, Pids),
+    Pid2 = west_utils:keyfind(2, Pids),
     {ok, {message, Res2, Ch2, _, _, _}} = west:pub(Pid2, "ps3", "U2PS32"),
     ?assertEqual("publication_succeeded", Res2),
     ?assertEqual("ps3", Ch2),

@@ -164,7 +164,7 @@ init([Key, CallbackSpec, Opts]) ->
     Dist      = application:get_env(west, dist, gproc),
     Scope     = ?GPROC_SCOPE(Dist),
     DistProps = application:get_env(west, dist_props, [{opts, [{n, 1}, {q, 1}]}]),
-    Name      = west_utils:build_name([Key, self(), erlang:now()]),
+    Name      = west_utils:build_name([Key, self(), os:timestamp()]),
     register(Name, self()),
     Server = ?WEST_SERVER{name=Name,
                           key=Key,

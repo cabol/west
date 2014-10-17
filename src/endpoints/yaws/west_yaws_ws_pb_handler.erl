@@ -65,7 +65,7 @@ init([Arg, InitialState]) ->
     DistProps = application:get_env(west, dist_props, [{opts, [{n, 1}, {q, 1}]}]),
     case string:tokens(yaws_api:arg_pathinfo(Arg), "/") of
         [_, Key] ->
-            Name = west_utils:build_name([Key, self(), erlang:now()]),
+            Name = west_utils:build_name([Key, self(), os:timestamp()]),
             register(Name, self()),
             CbSpec = {?MODULE, ev_callback, [{Name, node()}, undefined]},
             {ok, #state{server=?WEST_SERVER{name=Name,

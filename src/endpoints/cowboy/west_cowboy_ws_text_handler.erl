@@ -73,7 +73,7 @@ websocket_init(_TransportName, Req, _Opts) ->
     DistProps = application:get_env(west, dist_props, [{opts, [{n, 1}, {q, 1}]}]),
     case cowboy_req:binding(key, Req) of
         {Key, _} ->
-            Name = west_utils:build_name([Key, self(), erlang:now()]),
+            Name = west_utils:build_name([Key, self(), os:timestamp()]),
             register(Name, self()),
             CbSpec = {?MODULE, ev_callback, [{Name, node()}, undefined]},
             {ok, Req, #state{server=?WEST_SERVER{name=Name,

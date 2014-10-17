@@ -28,7 +28,9 @@
 -module(west_utils).
 
 %% API
--export([parse_query_string/1,
+-export([keyfind/2,
+         keyfind/3,
+         parse_query_string/1,
          get_prop/3,
          validate_json/1,
          props_for_types/2,
@@ -42,9 +44,37 @@
          iolist_to_atom/1,
          start_app_deps/1]).
 
+%% Types
+-type tuple_list() :: [{any(), any()}].
+
 %%%===================================================================
 %%% API
 %%%===================================================================
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Calls keyfind/3 with Default = undefined.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec keyfind(any(), tuple_list()) -> term().
+keyfind(Key, TupleList) ->
+    keyfind(Key, TupleList, undefined).
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Searches the list of tuples TupleList for a tuple whose Nth element
+%% compares equal to Key. Returns Tuple's value if such a tuple is
+%% found, otherwise Default.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec keyfind(any(), tuple_list(), any()) -> term().
+keyfind(Key, TupleList, Default) ->
+    case lists:keyfind(Key, 1, TupleList) of
+        {_K, V} -> V;
+        _       -> Default
+    end.
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -73,9 +103,9 @@ parse_query_string(Str) ->
 %%--------------------------------------------------------------------
 -spec get_prop(string(), list(), string()) -> term().
 get_prop(Name, Props, Default) ->
-    case proplists:lookup(Name, Props) of
-        {_, V} -> V;
-        _      -> Default
+    case lists:keyfind(Name, 1, Props) of
+        {_K, V} -> V;
+        _       -> Default
     end.
 
 %%--------------------------------------------------------------------
@@ -106,9 +136,9 @@ validate_json(Json) ->
 props_for_types(Types, Props) ->
     Fun =
         fun(Type, Acc) ->
-            case proplists:lookup(Type, Props) of
+            case lists:keyfind(Type, 1, Props) of
                 {_, Param} -> [{Type, Param}] ++ Acc;
-                none       -> Acc
+                _       -> Acc
             end
         end,
     lists:foldl(Fun, [], Types).
@@ -150,12 +180,12 @@ parse_datetime(DateStr) ->
 %%--------------------------------------------------------------------
 -spec get_timestamp_ms() -> integer().
 get_timestamp_ms() ->
-    {Mega, Sec, Micro} = erlang:now(),
+    {Mega, Sec, Micro} = os:timestamp(),
     (Mega * 1000000 + Sec) * 1000000 + Micro.
 
 %%--------------------------------------------------------------------
 %% @doc
-%% Parse a given ms timestamp to erlang:now() format.
+%% Parse a given ms timestamp to os:timestamp() format.
 %%
 %% @end
 %%--------------------------------------------------------------------

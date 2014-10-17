@@ -240,7 +240,7 @@ handle_event(Any, _Msg, _State) ->
 execute(?WEST_SERVER{dist=Dist, dist_props=DistProps}, B, K, {M, F, A}=Val) ->
     case Dist of
         west_dist ->
-            Opts = proplists:get_value(opts, DistProps, []),
+            Opts = west_utils:keyfind(opts, DistProps, []),
             apply(west_dist, cmd, [B, K, Val, Opts]);
         _ ->
             apply(M, F, A)
