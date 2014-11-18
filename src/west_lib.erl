@@ -146,11 +146,26 @@ unreg(Ref, Key) ->
 %% @end
 %%--------------------------------------------------------------------
 send(Scope, ETag, Key, Msg) ->
-    case ?SEND(Scope, ETag, Key, Msg) of
-        true ->
-            {ok, sending_succeeded, Key};
+    F = fun() ->
+            case ?SEND(Scope, ETag, Key, Msg) of
+                true ->
+                    {ok, sending_succeeded, Key};
+                _ ->
+                    {error, sending_failed, Key}
+            end
+        end,
+    case Scope of
+        g ->
+            case ?WHERE(Scope, Key) of
+                undefined ->
+                    {error, sending_failed, Key};
+                {error, _} ->
+                    {error, sending_failed, Key};
+                _ ->
+                    F()
+            end;
         _ ->
-            {error, sending_failed, Key}
+            F()
     end.
 
 %%--------------------------------------------------------------------

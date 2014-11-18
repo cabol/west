@@ -38,10 +38,7 @@
     try
         gproc_ps:subscribe(Scope, Event)
     catch
-        _:_ ->
-            PsError = lists:flatten(
-                io_lib:format("[Event:~p] Error to subscribe.", [Event])),
-            {error, PsError}
+        _:_ -> {error, gproc_sub_failed}
     end).
 
 -define(PS_SUB_EXT(Pid, Scope, Event),
@@ -55,20 +52,14 @@
                 true
         end
     catch
-        _:_ ->
-            PsError = lists:flatten(
-                io_lib:format("[Event:~p] Error to subscribe.", [Event])),
-            {error, PsError}
+        _:_ -> {error, gproc_sub_failed}
     end).
 
 -define(PS_UNSUB(Scope, Event),
     try
         gproc_ps:unsubscribe(Scope, Event)
     catch
-        _:_ ->
-            PsError = lists:flatten(
-                io_lib:format("[Event:~p] Error to unsubscribe.", [Event])),
-            {error, PsError}
+        _:_ -> {error, gproc_unsub_failed}
     end).
 
 -define(PS_UNSUB_EXT(Pid, Scope, Event),
@@ -77,10 +68,7 @@
         gproc_lib:remove_reg(GPKey, Pid, unreg),
         true
     catch
-        _:_ ->
-            Error = lists:flatten(
-                io_lib:format("[Name:~p] Error to register.", [Event])),
-            {error, Error}
+        _:_ -> {error, gproc_unsub_failed}
     end).
 
 -define(PS_PUB(Scope, ETag, Event, Msg),
@@ -88,10 +76,7 @@
         gproc:send({p, Scope, {gproc_ps_event, Event}}, {ETag, Event, Msg}),
         true
     catch
-        _:_ ->
-            PsError = lists:flatten(
-                io_lib:format("[Event:~p] Error to publish.", [Event])),
-            {error, PsError}
+        _:_ -> {error, gproc_pub_failed}
     end).
 
 -define(PS_PUB_ALL(Scope, ETag, Event, Msg),
@@ -102,20 +87,14 @@
                        {ETag, Event, Msg}]),
         true
     catch
-        _:_ ->
-            PsError = lists:flatten(
-                io_lib:format("[Event:~p] Error to publish.", [Event])),
-            {error, PsError}
+        _:_ -> {error, gproc_pub_failed}
     end).
 
 -define(REG(Scope, Key),
     try
         gproc:reg({n, Scope, Key})
     catch
-        _:_ ->
-            Error = lists:flatten(
-                io_lib:format("[Name:~p] Error to register.", [Key])),
-            {error, Error}
+        _:_ -> {error, gproc_reg_failed}
     end).
 
 -define(REG_EXT(Pid, Scope, Key),
@@ -129,20 +108,14 @@
                 true
         end
     catch
-        _:_ ->
-            Error = lists:flatten(
-                io_lib:format("[Name:~p] Error to register.", [Key])),
-            {error, Error}
+        _:_ -> {error, gproc_reg_failed}
     end).
 
 -define(UNREG(Scope, Key),
     try
         gproc:unreg({n, Scope, Key})
     catch
-        _:_ ->
-            Error = lists:flatten(
-                io_lib:format("[Name:~p] Error to unregister.", [Key])),
-            {error, Error}
+        _:_ -> {error, gproc_unreg_failed}
     end).
 
 -define(UNREG_EXT(Pid, Scope, Key),
@@ -151,10 +124,7 @@
         gproc_lib:remove_reg(GPKey, Pid, unreg),
         true
     catch
-        _:_ ->
-            Error = lists:flatten(
-                io_lib:format("[Name:~p] Error to register.", [Key])),
-            {error, Error}
+        _:_ -> {error, gproc_unreg_failed}
     end).
 
 -define(SEND(Scope, ETag, Key, Msg),
@@ -162,10 +132,14 @@
         gproc:send({n, Scope, Key}, {ETag, Key, Msg}),
         true
     catch
-        _:_ ->
-            Error = lists:flatten(
-                io_lib:format("[Key:~p] Error to send.", [Key])),
-            {error, Error}
+        _:_ -> {error, gproc_send_failed}
+    end).
+
+-define(WHERE(Scope, Key),
+    try
+        gproc:where({n, Scope, Key})
+    catch
+        _:_ -> {error, gproc_where_failed}
     end).
 
 -define(PROC_INFO(Pid),
@@ -173,10 +147,7 @@
         {gproc, Value} = gproc:info(Pid, gproc),
         Value
     catch
-        _:_ ->
-            Error = lists:flatten(
-                io_lib:format("[Proc:~p] Error getting process info.", [Pid])),
-            {error, Error}
+        _:_ -> {error, gproc_info_failed}
     end).
 
 -define(PROC_TYPE(Pid),
@@ -184,10 +155,7 @@
         {gproc, [{{Type, _, _}, _}|_T]} = gproc:info(Pid, gproc),
         Type
     catch
-        _:_ ->
-            Error = lists:flatten(
-                io_lib:format("[Proc:~p] Error getting process type.", [Pid])),
-            {error, Error}
+        _:_ -> {error, gproc_info_type_failed}
     end).
 
 -define(ENC_JSON(Any),

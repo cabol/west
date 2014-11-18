@@ -267,7 +267,7 @@ delete(ServerRef) ->
 %% @end
 %%--------------------------------------------------------------------
 init([Scope, CallbackSpec, Opts]) ->
-    Monitors = proplists:get_value(monitors, Opts, []),
+    Monitors = west_utils:keyfind(monitors, Opts, []),
     lists:foreach(fun(I) -> erlang:monitor(process, I) end, Monitors),
     {M, F, A} = CallbackSpec,
     {ok, #state{scope=Scope, cb=?CALLBACK_SPEC{mod=M, func=F, args=A}}}.

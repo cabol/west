@@ -52,11 +52,11 @@ parse_msg(Json) ->
             {error, <<"Invalid JSON, error at decode.">>};
         {struct, DecJson} ->
             try
-                Event = proplists:get_value(<<"event">>, DecJson),
-                Ch = proplists:get_value(<<"channel">>, DecJson),
-                From = proplists:get_value(<<"from">>, DecJson),
-                Id = proplists:get_value(<<"id">>, DecJson),
-                Data = proplists:get_value(<<"data">>, DecJson),
+                Event = west_utils:keyfind(<<"event">>, DecJson),
+                Ch = west_utils:keyfind(<<"channel">>, DecJson),
+                From = west_utils:keyfind(<<"from">>, DecJson),
+                Id = west_utils:keyfind(<<"id">>, DecJson),
+                Data = west_utils:keyfind(<<"data">>, DecJson),
                 ?MSG{event=Event, channel=Ch, from=From, id=Id, data=Data}
             catch
                 _:_ -> {error, <<"Parsing error.">>}
