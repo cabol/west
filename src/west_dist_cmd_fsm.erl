@@ -19,7 +19,7 @@
 %% -------------------------------------------------------------------
 
 %%%-------------------------------------------------------------------
-%%% @author Carlos Andres Bolaños R.A. <cabolanos@niagarasystems.co>
+%%% @author Carlos Andres Bolaños R.A. <candres@niagara.io>
 %%% @copyright (C) 2013, <Carlos Andres Bolaños>, All Rights Reserved.
 %%% @doc The coordinator for command opeartions.
 %%% @see <a href="http://basho.com/where-to-start-with-riak-core"></a>
