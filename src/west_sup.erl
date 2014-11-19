@@ -19,7 +19,7 @@
 %% -------------------------------------------------------------------
 
 %%%-------------------------------------------------------------------
-%%% @author Carlos Andres Bolaños R.A. <cabolanos@niagarasystems.co>
+%%% @author Carlos Andres Bolaños R.A. <candres@niagara.io>
 %%% @copyright (C) 2013, <Carlos Andres Bolaños>, All Rights Reserved.
 %%% @doc `WEST' supervisor.
 %%% @end

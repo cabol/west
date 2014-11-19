@@ -2,7 +2,7 @@
 Web/Event-driven Systems Tool
 =============================
 
-__Authors:__ Carlos Andres Bolaños R.A. ([`cabol@niagara.io`](mailto:cabol@niagara.io)).
+__Authors:__ Carlos Andres Bolaños R.A. ([`candres@niagara.io`](mailto:candres@niagara.io)).
 
 A new way to build real-time and high scalable messaging-based applications, not centralized but distributed!
 
