@@ -124,13 +124,8 @@ websocket_terminate(Reason, _Req, State) ->
 %%% Event handlers
 %%%===================================================================
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle the register event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle the register event.
 handle_event(["reg", Ch], WS) ->
     MsgSpec = ?MSG{id=undefined, channel=Ch},
     Res = west_protocol_handler:handle_event(register, MsgSpec, WS),
@@ -140,13 +135,8 @@ handle_event(["reg", Ch], WS) ->
                (iolist_to_binary(Event))/binary>>,
     {ok, BinRes};
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle the unregister event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle the unregister event.
 handle_event(["unreg", Ch], WS) ->
     MsgSpec = ?MSG{id=undefined, channel=Ch},
     Res = west_protocol_handler:handle_event(unregister, MsgSpec, WS),
@@ -156,13 +146,8 @@ handle_event(["unreg", Ch], WS) ->
                (iolist_to_binary(Event))/binary>>,
     {ok, BinRes};
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle the send event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle the send event.
 handle_event(["send", Ch, Msg], WS) ->
     MsgSpec = ?MSG{id=undefined, channel=Ch, data=Msg},
     Res = west_protocol_handler:handle_event(send, MsgSpec, WS),
@@ -172,13 +157,8 @@ handle_event(["send", Ch, Msg], WS) ->
                (iolist_to_binary(Event))/binary>>,
     {ok, BinRes};
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle the publish event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle the publish event.
 handle_event(["pub", Ch, Msg], WS) ->
     MsgSpec = ?MSG{id=undefined, channel=Ch, data=Msg},
     Res = west_protocol_handler:handle_event(publish, MsgSpec, WS),
@@ -188,13 +168,8 @@ handle_event(["pub", Ch, Msg], WS) ->
                (iolist_to_binary(Event))/binary>>,
     {ok, BinRes};
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle the subscribe event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle the subscribe event.
 handle_event(["sub", Ch], WS) ->
     MsgSpec = ?MSG{id=undefined, channel=Ch},
     Res = west_protocol_handler:handle_event(subscribe, MsgSpec, WS),
@@ -204,13 +179,8 @@ handle_event(["sub", Ch], WS) ->
                (iolist_to_binary(Event))/binary>>,
     {ok, BinRes};
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle the unsubscribe event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle the unsubscribe event.
 handle_event(["unsub", Ch], WS) ->
     MsgSpec = ?MSG{id=undefined, channel=Ch},
     Res = west_protocol_handler:handle_event(unsubscribe, MsgSpec, WS),
@@ -227,12 +197,8 @@ handle_event(Any, _State) ->
 %%% Internal functions
 %%%===================================================================
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Parse the text-based event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @private
+%% @doc Parse the text-based event.
 parse_msg(Msg) ->
     L = [string:strip(X, both, $ ) ||
          X <- string:tokens(binary_to_list(Msg), "\"")],
@@ -246,13 +212,8 @@ parse_msg(Msg) ->
 %%% Callback
 %%%===================================================================
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Event callback. This function is executed when messages arrives.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Event callback. This function is executed when message arrives.
 ev_callback({ETag, Event, Msg}, [WSRef, _Id]) ->
     Body = case Msg of
                Msg when is_binary(Msg) ->
@@ -266,4 +227,3 @@ ev_callback({ETag, Event, Msg}, [WSRef, _Id]) ->
               (iolist_to_binary(":new_message "))/binary,
               (iolist_to_binary(Body))/binary>>,
     WSRef ! {event, Reply}.
-

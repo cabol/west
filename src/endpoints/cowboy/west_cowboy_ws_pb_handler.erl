@@ -141,13 +141,8 @@ websocket_terminate(Reason, _Req, State) ->
 %%% Callback
 %%%===================================================================
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Event callback. This function is executed when messages arrives.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Event callback. This function is executed when message arrives.
 ev_callback({ETag, Event, Msg}, [WSRef, Id]) ->
     Reply = ?RES_CH_NEW_MSG(Id, ETag, atom_to_binary(Event, utf8), Msg, pb),
     BinReply = iolist_to_binary(message_pb:encode_message(Reply)),

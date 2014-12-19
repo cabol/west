@@ -48,14 +48,8 @@
 %%% WS callback
 %%%===================================================================
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Initialize the internal state of the callback module.
-%%
+%% @doc Initialize the internal state of the callback module.
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-%%
-%% @end
-%%--------------------------------------------------------------------
 init([Arg, InitialState]) ->
     ?LOG_INFO("Initalize ~p: ~p~n", [self(), InitialState]),
     Dist      = application:get_env(west, dist, gproc),
@@ -77,28 +71,15 @@ init([Arg, InitialState]) ->
             {error, <<"Error, missing key in path.">>}
     end.
 
-%%--------------------------------------------------------------------
-%% @doc
-%% This function is called when the connection is upgraded from HTTP
-%% to WebSocket.
-%%
+%% @doc This function is called when the connection is upgraded from
+%%      HTTP to WebSocket.
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-%%
-%% @end
-%%--------------------------------------------------------------------
 handle_open(WSState, State) ->
     yaws_websockets:send(WSState, {text, <<"Welcome !">>}),
     {ok, State}.
 
-%%--------------------------------------------------------------------
-%% @doc
-%% This function is called when a message <<"bye">> ({text, Data}) is
-%% received.
-%%
+%% @doc This function is called when a message <<"bye">> is received.
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-%%
-%% @end
-%%--------------------------------------------------------------------
 handle_message({text, <<"bye">>}, #state{nb_texts=N, nb_bins=M}=State) ->
     ?LOG_INFO("bye - Msg processed: ~p text, ~p binary~n", [N, M]),
     NbTexts = list_to_binary(integer_to_list(N)),
@@ -108,29 +89,14 @@ handle_message({text, <<"bye">>}, #state{nb_texts=N, nb_bins=M}=State) ->
                 {text, <<NbBins/binary, " binary messages received">>}],
     {close, {1000, <<"bye">>}, Messages, State};
 
-%%--------------------------------------------------------------------
-%% @doc
-%% This function is called when a message <<"ping">> ({text, Data}) is
-%% received.
-%%
+%% @doc This function is called when a message <<"ping">> is received.
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-%%
-%% @end
-%%--------------------------------------------------------------------
 handle_message({text, <<"ping">>}, #state{nb_texts=N}=State) ->
     ?LOG_INFO("Received text msg (N=~p): 4 bytes~n", [N]),
     {reply, {text, <<"west pong">>}, State#state{nb_texts=N+1}};
 
-%%--------------------------------------------------------------------
-%% @doc
-%% This function is called when a text message is received.
-%% {text, Data} is the unfragmented binary message.
-%% SUPPORTED by this handler.
-%%
+%% @doc This function is called when a TEXT message is received.
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-%%
-%% @end
-%%--------------------------------------------------------------------
 handle_message({text, Msg}, #state{nb_texts=N}=State) ->
     ?LOG_INFO("Received text msg (N=~p): ~p bytes~n", [N, byte_size(Msg)]),
     case parse_msg(Msg) of
@@ -148,61 +114,37 @@ handle_message({text, Msg}, #state{nb_texts=N}=State) ->
             end
     end;
 
-%%--------------------------------------------------------------------
-%% @doc
-%% This function is called when a binary message is received.
-%% {binary, Data} is the unfragmented binary message.
-%% NOT SUPPORTED by this handler.
-%%
+%% @doc This function is called when a binary message is received.
+%%      NOT HANDLED by this handler.
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-%%
-%% @end
-%%--------------------------------------------------------------------
 handle_message({binary, Msg}, #state{nb_bins=M}=State) ->
     ?LOG_INFO("Received binary msg (M=~p): ~p bytes~n", [M, byte_size(Msg)]),
     {reply, {binary, <<"bad_encoding">>}, State#state{nb_bins=M+1}};
 
-%%--------------------------------------------------------------------
-%% @doc
-%% When the client closes the connection, the callback module is
-%% notified with the message {close, Status, Reason}
-%%
+%% @doc When the client closes the connection, the callback module is
+%%      notified with the message {close, Status, Reason}
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-%%
-%% @end
-%%--------------------------------------------------------------------
 handle_message({close, Status, Reason}, _) ->
     ?LOG_INFO("Close connection: ~p - ~p~n", [Status, Reason]),
     {close, Status}.
 
-%%--------------------------------------------------------------------
 %% @doc
 %% If defined, this function is called when a timeout occurs or when
 %% the handling process receives any unknown message.
-%%
+%% <br/>
 %% Info is either the atom timeout, if a timeout has occurred, or
 %% the received message.
-%%
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-%%
-%% @end
-%%--------------------------------------------------------------------
 handle_info(timeout, State) ->
     ?LOG_INFO("process timed out~n", []),
     {reply, {text, <<"Anybody Else ?">>}, State};
 handle_info(_Info, State) ->
     {noreply, State}.
 
-%%--------------------------------------------------------------------
-%% @doc
-%% This function is called when the handling process is about to
-%% terminate. it should be the opposite of Module:init/1 and do any
-%% necessary cleaning up.
-%%
+%% @doc This function is called when the handling process is about to
+%%      terminate. it should be the opposite of Module:init/1 and do
+%%      any necessary cleaning up.
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-%%
-%% @end
-%%--------------------------------------------------------------------
 terminate(Reason, State) ->
     ?LOG_INFO("terminate ~p: ~p (state:~p)~n", [self(), Reason, State]),
     ok.
@@ -211,13 +153,8 @@ terminate(Reason, State) ->
 %%% Event handlers
 %%%===================================================================
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle the register event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle the register event.
 handle_event(["reg", Ch], WS) ->
     MsgSpec = ?MSG{id=undefined, channel=Ch},
     Res = west_protocol_handler:handle_event(register, MsgSpec, WS),
@@ -227,13 +164,8 @@ handle_event(["reg", Ch], WS) ->
                (iolist_to_binary(Event))/binary>>,
     {ok, BinRes};
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle the unregister event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle the unregister event.
 handle_event(["unreg", Ch], WS) ->
     MsgSpec = ?MSG{id=undefined, channel=Ch},
     Res = west_protocol_handler:handle_event(unregister, MsgSpec, WS),
@@ -243,13 +175,8 @@ handle_event(["unreg", Ch], WS) ->
                (iolist_to_binary(Event))/binary>>,
     {ok, BinRes};
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle the send event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle the send event.
 handle_event(["send", Ch, Msg], WS) ->
     MsgSpec = ?MSG{id=undefined, channel=Ch, data=Msg},
     Res = west_protocol_handler:handle_event(send, MsgSpec, WS),
@@ -259,13 +186,8 @@ handle_event(["send", Ch, Msg], WS) ->
                (iolist_to_binary(Event))/binary>>,
     {ok, BinRes};
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle the publish event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle the publish event.
 handle_event(["pub", Ch, Msg], WS) ->
     MsgSpec = ?MSG{id=undefined, channel=Ch, data=Msg},
     Res = west_protocol_handler:handle_event(publish, MsgSpec, WS),
@@ -275,13 +197,8 @@ handle_event(["pub", Ch, Msg], WS) ->
                (iolist_to_binary(Event))/binary>>,
     {ok, BinRes};
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle the subscribe event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle the subscribe event.
 handle_event(["sub", Ch], WS) ->
     MsgSpec = ?MSG{id=undefined, channel=Ch},
     Res = west_protocol_handler:handle_event(subscribe, MsgSpec, WS),
@@ -291,13 +208,8 @@ handle_event(["sub", Ch], WS) ->
                (iolist_to_binary(Event))/binary>>,
     {ok, BinRes};
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle the unsubscribe event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle the unsubscribe event.
 handle_event(["unsub", Ch], WS) ->
     MsgSpec = ?MSG{id=undefined, channel=Ch},
     Res = west_protocol_handler:handle_event(unsubscribe, MsgSpec, WS),
@@ -307,6 +219,7 @@ handle_event(["unsub", Ch], WS) ->
                (iolist_to_binary(Event))/binary>>,
     {ok, BinRes};
 
+%% @private
 handle_event(Any, _State) ->
     {none, Any}.
 
@@ -314,12 +227,8 @@ handle_event(Any, _State) ->
 %%% Internal functions
 %%%===================================================================
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Parse the text-based event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @private
+%% @doc Parse the text-based event.
 parse_msg(Msg) ->
     L = [string:strip(X, both, $ ) ||
          X <- string:tokens(binary_to_list(Msg), "\"")],
@@ -333,13 +242,8 @@ parse_msg(Msg) ->
 %%% Callback
 %%%===================================================================
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Event callback. This function is executed when messages arrives.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Event callback. This function is executed when message arrives.
 ev_callback({ETag, Event, Msg}, [WSRef, _Id]) ->
     Body = case Msg of
                Msg when is_binary(Msg) ->

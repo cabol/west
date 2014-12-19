@@ -63,43 +63,28 @@
 %%% API
 %%%===================================================================
 
-%%--------------------------------------------------------------------
-%% @spec start_vnode(I) -> Reply :: term()
-%%
-%% Types:
-%%    I = any()
-%%
-%% @doc
-%% Starts the vnode
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Starts the vnode.
+%% @spec start_vnode(I :: any()) -> Reply :: term()
 start_vnode(I) ->
     riak_core_vnode_master:get_vnode_pid(I, ?MODULE).
 
-%%--------------------------------------------------------------------
-%% @spec cmd(PrefList, ReqID, CallbackSpec) -> Reply :: term()
-%%
-%% Types:
-%%    PrefList = any()
-%%    ReqID = Hash :: integer() >= 0
-%%    CallbackSpec = {Mod :: atom(), Fun :: atom(), Args :: list()}
-%%
-%% @doc
+%% @doc cmd/3.
 %% Execute the given command applying the callback function. This
 %% callback can be an operation like:
-%% [reg, unreg, send, sub, unsub, pub].
+%% <code>reg|unreg|send|sub|unsub|pub</code>
+%% <br/>
+%% <li>PrefList: Riak Core preflist.</li>
+%% <li>ReqID: Request id so the caller can verify the response.</li>
+%% <li>Ref: Unique reference to the GS that will be created.</li>
+%% <li>Key: Key which the GS will be registered.</li>
+%% <li>CallbackSpec: Callback specification. This will applied when
+%% messages arrives. If `Mod' is `none', the callback will be treated
+%% as a fun.</li>
 %%
-%% PrefList: Riak Core preflist.
-%% ReqID: The request id so the caller can verify the response.
-%% Ref: Unique reference to the GS that will be created.
-%% Key: Key which the GS will be registered.
-%% CallbackSpec: Callback specification. This will applied when
-%%               messages arrives. If `Mod' is `none', the callback
-%%               will be treated as a fun.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @spec cmd(PrefList, ReqID, CallbackSpec) -> Reply :: term()
+%% PrefList = any()
+%% ReqID = Hash :: integer() >= 0
+%% CallbackSpec = {Mod :: atom(), Fun :: atom(), Args :: list()}
 cmd(PrefList, ReqID, CallbackSpec) ->
     riak_core_vnode_master:command(PrefList,
                                    {ReqID, CallbackSpec},
@@ -110,13 +95,7 @@ cmd(PrefList, ReqID, CallbackSpec) ->
 %%% VNode Callbacks
 %%%===================================================================
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Init the VNode.
-%%
-%% @end
-%%--------------------------------------------------------------------
 init([Partition]) ->
     TS = os:timestamp(),
     %% This could get ugly if you expect them to be unique across data
@@ -124,23 +103,13 @@ init([Partition]) ->
     <<MachineID:10/bits, _Rest/bits>> = <<Partition:160/integer>>,
     {ok, #state{partition=Partition, machine_id=MachineID, last_timestamp=TS}}.
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle ping command - for verification purposes.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle ping command - for verification purposes.
 handle_command(ping, _Sender, State) ->
     {reply, {pong, State#state.partition}, State};
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle received command. Applies the callback function.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle received command. Applies the callback function.
 handle_command({ReqID, {M, F, A}}, _Sender, State) ->
     Reply = case M of
                 none when is_function(F) ->
@@ -150,114 +119,59 @@ handle_command({ReqID, {M, F, A}}, _Sender, State) ->
             end,
     {reply, {ok, ReqID, Reply}, State}.
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Not handled.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Not handled.
 handle_handoff_command(_Message, _Sender, State) ->
     %% Delay a little to naively avoid ID collisions
     timer:sleep(1000),
     {forward, State}.
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Not handled.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Not handled.
 handoff_starting(_TargetNode, _State) ->
     {true, _State}.
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Not handled.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Not handled.
 handoff_cancelled(State) ->
     {ok, State}.
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Not handled.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Not handled.
 handoff_finished(_TargetNode, State) ->
     {ok, State}.
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Not handled.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Not handled.
 handle_handoff_data(_Data, State) ->
     {reply, ok, State}.
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Not handled.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Not handled.
 encode_handoff_item(_ObjectName, _ObjectValue) ->
     <<>>.
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Not handled.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Not handled.
 is_empty(State) ->
     {true, State}.
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Not handled.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Not handled.
 delete(State) ->
     {ok, State}.
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Not handled.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Not handled.
 handle_coverage(_Req, _KeySpaces, _Sender, State) ->
     {stop, not_implemented, State}.
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Not handled.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Not handled.
 handle_exit(_Pid, Reason, State) ->
     {stop, Reason, State}.
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Not handled.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Not handled.
 terminate(_Reason, _State) ->
     ok.

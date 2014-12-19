@@ -333,15 +333,6 @@ However, is recommended run `west` in distributed fashion with `gproc` local and
 
 
 
-Implementation Notes
---------------------
-
-### Top-level layers view ###
-
-![LayerArch](./doc/assets/west_arch_layer_view.png)
-
-
-
 Annexes
 -------
 

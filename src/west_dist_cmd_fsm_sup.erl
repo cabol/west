@@ -41,32 +41,13 @@
 %%% API functions
 %%%===================================================================
 
-%%--------------------------------------------------------------------
-%% @spec start_cmd_fsm(Args) -> {ok, pid()} |
-%%                              ignore |
-%%                              {error, Reason :: term()}
-%%
-%% Types:
-%%    Args = list()
-%%
-%% @doc
-%% Starts a new child (worker).
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Starts a new child (worker).
+%% @spec start_cmd_fsm(Args :: list()) -> supervisor:startchild_ret()
 start_cmd_fsm(Args) ->
     supervisor:start_child(?MODULE, Args).
 
-%%--------------------------------------------------------------------
-%% @spec start_link() -> {ok, pid()} |
-%%                       ignore |
-%%                       {error, Reason :: term()}
-%%
-%% @doc
-%% Starts the supervisor
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Starts the supervisor
+%% @spec start_link() -> supervisor:startlink_ret()
 start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
@@ -74,16 +55,7 @@ start_link() ->
 %%% Supervisor callbacks
 %%%===================================================================
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Whenever a supervisor is started using supervisor:start_link/[2,3],
-%% this function is called by the new process to find out about
-%% restart strategy, maximum restart frequency and child
-%% specifications.
-%%
-%% @end
-%%--------------------------------------------------------------------
 init([]) ->
     CmdFsm = {west_dist_cmd_fsm,
               {west_dist_cmd_fsm, start_link, []},

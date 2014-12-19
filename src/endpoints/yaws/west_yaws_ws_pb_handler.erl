@@ -50,14 +50,8 @@
 %%% WS callback
 %%%===================================================================
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Initialize the internal state of the callback module.
-%%
+%% @doc Initialize the internal state of the callback module.
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-%%
-%% @end
-%%--------------------------------------------------------------------
 init([Arg, InitialState]) ->
     ?LOG_INFO("Initalize ~p: ~p~n", [self(), InitialState]),
     Dist      = application:get_env(west, dist, gproc),
@@ -81,31 +75,19 @@ init([Arg, InitialState]) ->
             {error, iolist_to_binary(message_pb:encode_message(Err))}
     end.
 
-%%--------------------------------------------------------------------
-%% @doc
-%% This function is called when the connection is upgraded from HTTP
-%% to WebSocket.
-%%
+%% @doc This function is called when the connection is upgraded from
+%%      HTTP to WebSocket.
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-%%
-%% @end
-%%--------------------------------------------------------------------
 handle_open(WSState, State) ->
     Response = ?RES_CONN_ESTABLISHED(pb),
     ResBin = message_pb:encode_message(Response),
     yaws_websockets:send(WSState, {binary, iolist_to_binary(ResBin)}),
     {ok, State}.
 
-%%--------------------------------------------------------------------
-%% @doc
-%% This function is called when a binary message is received.
-%% {binary, Data} is the unfragmented binary message.
-%% SUPPORTED by this handler.
-%%
+%% @doc This function is called when a binary message is received.
+%%      {binary, Data} is the unfragmented binary message.
+%%      SUPPORTED by this handler.
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-%%
-%% @end
-%%--------------------------------------------------------------------
 handle_message({binary, Msg},
                #state{nb_bins=M, server=?WEST_SERVER{key=K}}=State) ->
     ?LOG_INFO("Received binary msg (M=~p): ~p bytes~n", [M, byte_size(Msg)]),
@@ -137,45 +119,27 @@ handle_message({binary, Msg},
             {reply, {binary, BinErr2}, State#state{nb_bins=M+1}}
     end;
 
-%%--------------------------------------------------------------------
-%% @doc
-%% This function is called when a text message is received.
-%% {text, Data} is the unfragmented binary message.
-%% NOT SUPPORTED by this handler.
-%%
+%% @doc This function is called when a TEXT message is received.
+%%      NOT HANDLED by this handler.
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-%%
-%% @end
-%%--------------------------------------------------------------------
 handle_message({text, Msg}, #state{nb_texts=N}=State) ->
     ?LOG_INFO("Received text msg (N=~p): ~p bytes~n", [N, byte_size(Msg)]),
     {reply, {text, <<"bad_encoding">>}, State#state{nb_bins=N+1}};
 
-%%--------------------------------------------------------------------
-%% @doc
-%% When the client closes the connection, the callback module is
-%% notified with the message {close, Status, Reason}
-%%
+%% @doc When the client closes the connection, the callback module is
+%%      notified with the message {close, Status, Reason}
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-%%
-%% @end
-%%--------------------------------------------------------------------
 handle_message({close, Status, Reason}, _) ->
     ?LOG_INFO("Close connection: ~p - ~p~n", [Status, Reason]),
     {close, Status}.
 
-%%--------------------------------------------------------------------
 %% @doc
 %% If defined, this function is called when a timeout occurs or when
 %% the handling process receives any unknown message.
-%%
+%% <br/>
 %% Info is either the atom timeout, if a timeout has occurred, or
 %% the received message.
-%%
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-%%
-%% @end
-%%--------------------------------------------------------------------
 handle_info(timeout, State) ->
     ?LOG_INFO("process timed out~n", []),
     Bin = iolist_to_binary(message_pb:encode_message(?MSG{event="timeout"})),
@@ -183,16 +147,10 @@ handle_info(timeout, State) ->
 handle_info(_Info, State) ->
     {noreply, State}.
 
-%%--------------------------------------------------------------------
-%% @doc
-%% This function is called when the handling process is about to
-%% terminate. it should be the opposite of Module:init/1 and do any
-%% necessary cleaning up.
-%%
+%% @doc This function is called when the handling process is about to
+%%      terminate. it should be the opposite of Module:init/1 and do
+%%      any necessary cleaning up.
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-%%
-%% @end
-%%--------------------------------------------------------------------
 terminate(Reason, State) ->
     ?LOG_INFO("terminate ~p: ~p (state:~p)~n", [self(), Reason, State]),
     ok.
@@ -201,13 +159,8 @@ terminate(Reason, State) ->
 %%% Callback
 %%%===================================================================
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Event callback. This function is executed when messages arrives.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Event callback. This function is executed when message arrives.
 ev_callback({ETag, Event, Msg}, [WSRef, Id]) ->
     Reply = ?RES_CH_NEW_MSG(Id, ETag, atom_to_binary(Event, utf8), Msg, pb),
     BinReply = iolist_to_binary(message_pb:encode_message(Reply)),

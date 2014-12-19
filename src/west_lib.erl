@@ -42,31 +42,25 @@
 %%% API
 %%%===================================================================
 
-%%--------------------------------------------------------------------
-%% @spec reg(Scope, Ref, Key, CbSpec) -> Reply :: term()
-%%
-%% Types:
-%%    Scope = atom()
-%%    Ref = any()
-%%    Key = atom()
-%%    CbSpec = {Mod :: atom(), Fun :: atom(), Args :: list()}
-%%
-%% @doc
+%% @doc reg/4.
 %% Register to a point-to-point channel with name `Key'. All incoming
 %% events to the channel `Key' will be handle them by a GS created
 %% by this process.
-%%
+%% <br/>
 %% Creates a GS event handler and register it into Gproc, locally.
 %% This GS will handle the incoming messages.
+%% <br/>
+%% <li>Scope: Gproc scope.</li>
+%% <li>Ref: Unique reference to the GS that will be created.</li>
+%% <li>Key: Key which the GS will be registered.</li>
+%% <li>CbSpec: Callback specification. This will be called when messages
+%% arrives.</li>
 %%
-%% Scope: Gproc scope
-%% Ref: Unique reference to the GS that will be created.
-%% Key: Key which the GS will be registered.
-%% CbSpec: Callback specification. This will be called when messages
-%%         arrives.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @spec reg(Scope, Ref, Key, CbSpec) -> Reply :: term()
+%% Scope = atom()
+%% Ref = any()
+%% Key = atom()
+%% CbSpec = {Mod :: atom(), Fun :: atom(), Args :: list()}
 reg(Scope, Ref, Key, CbSpec) ->
     Name = west_utils:build_name([Ref, Key]),
     case whereis(Name) of
@@ -86,26 +80,18 @@ reg(Scope, Ref, Key, CbSpec) ->
             {error, registration_already_exist, Key}
     end.
 
-%%--------------------------------------------------------------------
-%% @spec unreg(Ref, Key) -> Reply :: term()
-%%
-%% Types:
-%%    Ref = any()
-%%    Key = atom()
-%%
-%% @doc
+%% @doc unreg/2.
 %% Unregister from a point-to-point channel with name `Key'. The
 %% created GS process won't handle incoming events to channel `Key'
 %% any more.
-%%
+%% <br/>
 %% Destroy the GS event handler in order to delete the registration
 %% from Gproc.
+%% <br/>
+%% <li>Ref: Unique reference to the GS that will be created.</li>
+%% <li>Key: Key which the GS was registered.</li>
 %%
-%% Ref: Unique reference to the GS that will be created.
-%% Key: Key which the GS was registered.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @spec unreg(Ref :: any(), Key :: atom()) -> Reply :: term()
 unreg(Ref, Key) ->
     Name = west_utils:build_name([Ref, Key]),
     case whereis(Name) of
@@ -121,30 +107,24 @@ unreg(Ref, Key) ->
             end
     end.
 
-%%--------------------------------------------------------------------
-%% @spec send(Scope, ETag, Key, Msg) -> Reply :: term()
-%%
-%% Types:
-%%    Scope = atom()
-%%    ETag = string()
-%%    Key = atom()
-%%    Msg = binary() | list()
-%%
-%% @doc
+%% @doc send/4.
 %% Send the message `Msg' to point-to-point channel `Key'. Just one
 %% consumer will receive this message.
-%%
+%% <br/>
 %% Sends the given message `Msg' to a `Key'. If the registration to
 %% `Key' exist, message will be received by the registered GS. If
 %% registration doesn't exist, send will fail.
+%% <br/>
+%% <li>Scope: Gproc scope.</li>
+%% <li>ETag: ID of the sender.</li>
+%% <li>Key: Key which the GS was registered.</li>
+%% <li>Msg: Message that will send.</li>
 %%
-%% Scope: Gproc scope
-%% ETag: ID of the sender.
-%% Key: Key which the GS was registered.
-%% Msg: Message that will send.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @spec send(Scope, ETag, Key, Msg) -> Reply :: term()
+%% Scope = atom()
+%% ETag = string()
+%% Key = atom()
+%% Msg = binary() | list()
 send(Scope, ETag, Key, Msg) ->
     F = fun() ->
             case ?SEND(Scope, ETag, Key, Msg) of
@@ -168,31 +148,25 @@ send(Scope, ETag, Key, Msg) ->
             F()
     end.
 
-%%--------------------------------------------------------------------
-%% @spec sub(Scope, Ref, Event, CbSpec) -> Reply :: term()
-%%
-%% Types:
-%%    Scope = atom()
-%%    Ref = any()
-%%    Event = atom()
-%%    CbSpec = {Mod :: atom(), Fun :: atom(), Args :: list()}
-%%
-%% @doc
+%% @doc sub/4.
 %% Subscribe to a pub/sub channel `Event'. All incoming events to the
 %% channel `Event' will be handle them by GS created by this process.
-%%
+%% <br/>
 %% Creates a GS event handler and subscribe it into Gproc, in order
 %% to handle the subscription lifecycle and handle the published
 %% messages to `Event'.
+%% <br/>
+%% <li>Scope: Gproc scope.</li>
+%% <li>Ref: Unique reference to the GS that will be created.</li>
+%% <li>Event: Event which the GS will be subscribed.</li>
+%% <li>CbSpec: Callback specification. This will be called when messages
+%% arrives.</li>
 %%
-%% Scope: Gproc scope
-%% Ref: Unique reference to the GS that will be created.
-%% Event: Event which the GS will be subscribed.
-%% CbSpec: Callback specification. This will be called when messages
-%%         arrives.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @spec sub(Scope, Ref, Event, CbSpec) -> Reply :: term()
+%% Scope = atom()
+%% Ref = any()
+%% Event = atom()
+%% CbSpec = {Mod :: atom(), Fun :: atom(), Args :: list()}
 sub(Scope, Ref, Event, CbSpec) ->
     Name = west_utils:build_name([Ref, Event]),
     case whereis(Name) of
@@ -212,26 +186,18 @@ sub(Scope, Ref, Event, CbSpec) ->
             {error, subscription_already_exist, Event}
     end.
 
-%%--------------------------------------------------------------------
-%% @spec unsub(Ref, Event) -> Reply :: term()
-%%
-%% Types:
-%%    Ref = any()
-%%    Event = atom()
-%%
-%% @doc
+%% @doc unsub/2.
 %% Delete a subscription from a pub/sub channel `Event'.The
 %% created GS process won't handle incoming events to channel `Event'
 %% any more.
-%%
+%% <br/>
 %% Destroy the GS event handler in order to delete the subscription
 %% from Gproc. Ends the subscription lifecycle.
+%% <br/>
+%% <li>Ref: Unique reference to the GS that will be created.</li>
+%% <li>Event: Event which the GS was subscribed.</li>
 %%
-%% Ref: Unique reference to the GS that will be created.
-%% Event: Event which the GS was subscribed.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @spec unsub(Ref :: any(), Event :: atom()) -> Reply :: term()
 unsub(Ref, Event) ->
     Name = west_utils:build_name([Ref, Event]),
     case whereis(Name) of
@@ -247,30 +213,24 @@ unsub(Ref, Event) ->
             end
     end.
 
-%%--------------------------------------------------------------------
-%% @spec pub(Scope, ETag, Event, Msg) -> Reply :: term()
-%%
-%% Types:
-%%    Scope = atom()
-%%    ETag = string()
-%%    Event = atom()
-%%    Msg = binary() | list()
-%%
-%% @doc
+%% @doc pub/4.
 %% Publish the message `Msg' to all subscribers to a pub/sub channel
 %% `Event'.
-%%
+%% <br/>
 %% Publishes the given message `Msg' into the a `Event'. If the
 %% subscription to `Event' exist, message will be received by the
 %% subscribed GS. If subscription doesn't exist, publish will fail.
+%% <br/>
+%% <li>Scope: Gproc scope.</li>
+%% <li>ETag: ID of the sender.</li>
+%% <li>Event: Event which the GS was registered.</li>
+%% <li>Msg: Message that will send.</li>
 %%
-%% Scope: Gproc scope
-%% ETag: ID of the sender.
-%% Event: Event which the GS was registered.
-%% Msg: Message that will send.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @spec pub(Scope, ETag, Event, Msg) -> Reply :: term()
+%% Scope = atom()
+%% ETag = string()
+%% Event = atom()
+%% Msg = binary() | list()
 pub(Scope, ETag, Event, Msg) ->
     case ?PS_PUB(Scope, ETag, Event, Msg) of
         true ->

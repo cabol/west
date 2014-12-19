@@ -37,20 +37,14 @@
 %%% API
 %%%===================================================================
 
-%%--------------------------------------------------------------------
-%% @spec parse_msg(Json :: binary()) -> Reply :: msg_spec()
-%%
-%% @doc
-%% Parse the `Json' representation of a `?MSG' and return the parsed
-%% `?MSG' record.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Parse the `Json' representation of a `?MSG' and return the
+%%      parsed `?MSG' record.
+%% @spec parse_msg(Json :: iodata()) -> Reply :: msg_spec()
 parse_msg(Json) ->
     case ?DEC_JSON(Json) of
-        {fail, _} ->
+        {error, _} ->
             {error, <<"Invalid JSON, error at decode.">>};
-        {struct, DecJson} ->
+        {DecJson} ->
             try
                 Event = west_utils:keyfind(<<"event">>, DecJson),
                 Ch = west_utils:keyfind(<<"channel">>, DecJson),
@@ -63,15 +57,9 @@ parse_msg(Json) ->
             end
     end.
 
-%%--------------------------------------------------------------------
-%% @spec format_msg(Msg :: msg_spec()) -> Reply :: binary()
-%%
-%% @doc
-%% Formats the given message `Msg' and return the Json representation
-%% as a binary.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Formats the given message `Msg' and return the Json
+%%      representation as iodata.
+%% @spec format_msg(Msg :: msg_spec()) -> Reply :: iodata()
 format_msg(Msg) ->
     ?MSG{event=Ev, channel=Ch, from=From, id=Id, data=Data} = Msg,
     L0 = [{event, Ev}, {channel, Ch}, {from, From}, {id, Id}, {data, Data}],
@@ -80,29 +68,17 @@ format_msg(Msg) ->
            (X) -> iolist_to_binary(lists:flatten(io_lib:format("~p", [X])))
         end,
     L = [{F(X), F(Y)} || {X, Y} <- L0, Y =/= undefined],
-    case ?ENC_JSON(L) of
-        {fail, _} -> {error, <<"Invalid MSG, error at encode.">>};
-        EncJson   -> EncJson
-    end.
+    ?ENC_JSON({L}).
 
-%%--------------------------------------------------------------------
-%% @spec build_msg(Id, From, Event, Channel, Data, Format) ->
-%%                 Reply :: binary()
-%%
-%% Types:
-%%    Id = iolist() | undefined
-%%    From = iolist() | undefined
-%%    Event = iolist() | undefined
-%%    Channel = iolist() | undefined
-%%    Data = iolist() | undefined
-%%    Format = atom()
-%%
-%% @doc
-%% Build a `?MSG' with the given arguments, and format that message
-%% and return a Json as binary if `Format' is json.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Build a `?MSG' with the given arguments, and format that
+%%      message and return a Json as iodata if `Format' is json.
+%% @spec build_msg(Id, From, Event, Channel, Data, Format) -> Reply :: iodata()
+%% Id = iolist() | undefined
+%% From = iolist() | undefined
+%% Event = iolist() | undefined
+%% Channel = iolist() | undefined
+%% Data = iolist() | undefined
+%% Format = atom()
 build_msg(Id, From, Event, Channel, Data, Format) ->
     Msg = ?MSG{event=Event, channel=Channel, from=From, id=Id, data=Data},
     case Format of

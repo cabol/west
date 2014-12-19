@@ -38,23 +38,13 @@
 %%% API
 %%%===================================================================
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle the ping event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle the ping event.
 handle_event(ping, ?MSG{id=Id}, ?WEST_SERVER{format=F}) ->
     {ok, ?RES_PONG(Id, F)};
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle the register event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle the register event.
 handle_event(register,
              ?MSG{id=Id, channel=Ch},
              ?WEST_SERVER{name=Name, scope=Sc, cb=Cbk, format=F}=WS) ->
@@ -78,13 +68,8 @@ handle_event(register,
             {error, ?RES_REG_FAILED(Id, Ch, F)}
     end;
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle the unregister event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle the unregister event.
 handle_event(unregister,
              ?MSG{id=Id, channel=Ch},
              ?WEST_SERVER{name=Name, format=F}=WS) ->
@@ -106,13 +91,8 @@ handle_event(unregister,
             {error, ?RES_UNREG_FAILED(Id, Ch, F)}
     end;
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle the send event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle the send event.
 handle_event(send,
              ?MSG{id=Id, channel=Ch, data=Data},
              ?WEST_SERVER{key=K, scope=Scope, format=F}=WS) ->
@@ -134,13 +114,8 @@ handle_event(send,
             {error, ?RES_SEND_FAILED(Id, Ch, F)}
     end;
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle the publish event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle the publish event.
 handle_event(publish,
              ?MSG{id=Id, channel=Ch, data=Data},
              ?WEST_SERVER{key=K, dist=Dist, format=F}) ->
@@ -158,13 +133,8 @@ handle_event(publish,
             {error, ?RES_PUB_FAILED(Id, Ch, F)}
     end;
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle the subscribe event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle the subscribe event.
 handle_event(subscribe,
              ?MSG{id=Id, channel=Ch},
              ?WEST_SERVER{name=Name, key=K, scope=Sc, cb=Cbk, format=F}=WS) ->
@@ -188,13 +158,8 @@ handle_event(subscribe,
             {error, ?RES_SUB_FAILED(Id, Ch, F)}
     end;
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handle the unsubscribe event.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handle the unsubscribe event.
 handle_event(unsubscribe,
              ?MSG{id=Id, channel=Ch},
              ?WEST_SERVER{name=Name, key=K, format=F}=WS) ->
@@ -216,13 +181,8 @@ handle_event(unsubscribe,
             {error, ?RES_UNSUB_FAILED(Id, Ch, F)}
     end;
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Unhandled events.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Unhandled events.
 handle_event(Any, _Msg, _State) ->
     {none, Any}.
 
@@ -230,13 +190,8 @@ handle_event(Any, _Msg, _State) ->
 %%% Internal functions
 %%%===================================================================
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Executes the asked command.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Executes the asked command.
 execute(?WEST_SERVER{dist=Dist, dist_props=DistProps}, B, K, {M, F, A}=Val) ->
     case Dist of
         west_dist ->

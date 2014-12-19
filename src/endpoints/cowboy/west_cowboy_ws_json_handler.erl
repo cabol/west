@@ -130,18 +130,12 @@ websocket_terminate(Reason, _Req, State) ->
     ?LOG_INFO("terminate ~p: ~p (state:~p)~n", [self(), Reason, State]),
     ok.
 
-
 %%%===================================================================
 %%% Callback
 %%%===================================================================
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Event callback. This function is executed when messages arrives.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Event callback. This function is executed when message arrives.
 ev_callback({ETag, Event, Msg}, [WSRef, Id]) ->
     Reply = ?RES_CH_NEW_MSG(Id, ETag, Event, Msg, json),
     WSRef ! {event, Reply}.
