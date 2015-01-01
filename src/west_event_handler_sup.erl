@@ -43,25 +43,14 @@
 %%% API
 %%%===================================================================
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Start a gen_server to register the subscription and handle incoming
-%% events to this subscription.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec start_link() -> {ok, pid()} | {error, term()}.
+%% @doc Start a gen_server to register the subscription and handle
+%%      incoming events to this subscription.
+-spec start_link() -> supervisor:startlink_ret().
 start_link() ->
     supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Starts a new child `west_event_handler'.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec start_child(scope(), cb_spec(), proplist()) ->
-                  {ok, pid()} | {error, term()}.
+%% @doc Starts a new child `west_event_handler'.
+-spec start_child(scope(), cb_spec(), proplist()) -> supervisor:startchild_ret().
 start_child(Scope, CallbackSpec, Opts) ->
     supervisor:start_child(?SERVER, [Scope, CallbackSpec, Opts]).
 
@@ -69,16 +58,7 @@ start_child(Scope, CallbackSpec, Opts) ->
 %%% Supervisor callbacks
 %%%===================================================================
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Whenever a supervisor is started using supervisor:start_link/[2,3],
-%% this function is called by the new process to find out about
-%% restart strategy, maximum restart frequency and child
-%% specifications.
-%%
-%% @end
-%%--------------------------------------------------------------------
 init(_Args) ->
     Element = {west_event_handler,
                {west_event_handler, start_link, []},

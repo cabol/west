@@ -39,17 +39,8 @@
 %%% API
 %%%===================================================================
 
-%%--------------------------------------------------------------------
-%% @spec start_link() -> {ok, pid()} |
-%%                       ignore |
-%%                       {error, Reason :: term()}
-%%
-%% @doc
-%% Starts the `WEST' supervisor.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec start_link() -> {ok, pid()} | {error, term()}.
+%% @doc Starts the `WEST' supervisor.
+-spec start_link() -> supervisor:startlink_ret().
 start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
@@ -57,16 +48,7 @@ start_link() ->
 %%% Supervisor Callbacks
 %%%===================================================================
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Whenever a supervisor is started using supervisor:start_link/[2,3],
-%% this function is called by the new process to find out about
-%% restart strategy, maximum restart frequency and child
-%% specifications.
-%%
-%% @end
-%%--------------------------------------------------------------------
 init([]) ->
     {ok, {{one_for_one, 5, 10}, process_specs()}}.
 
@@ -74,13 +56,8 @@ init([]) ->
 %%% Internal functions
 %%%===================================================================
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Build the process specifications that will be supervised.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Build the process specifications that will be supervised.
 -spec process_specs() -> [supervisor:child_spec()].
 process_specs() ->
     EvHdlr_sup = {west_event_handler_sup,

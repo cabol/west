@@ -33,3 +33,8 @@ devclean:
 dev1 dev2 dev3:
 	mkdir -p dev
 	(cd rel && ../rebar generate target_dir=../dev/$@ overlay_vars=vars/$@.config)
+
+clean_all:
+	rm -rf rel/west
+	rm -rf dev
+	./rebar clean

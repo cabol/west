@@ -158,19 +158,6 @@
         _:_ -> {error, gproc_info_type_failed}
     end).
 
--define(ENC_JSON(Any),
-    try
-        iolist_to_binary(mochijson2:encode(Any))
-    catch
-        _:Error -> {fail, Error}
-    end).
+-define(ENC_JSON(JsonTerm), west_utils:enc_json(JsonTerm)).
 
--define(DEC_JSON(Json),
-    try
-        mochijson2:decode(Json)
-    catch
-        throw:invalid_utf8 ->
-            {fail, {invalid_utf8, <<"Illegal UTF-8 character">>}};
-        error:Error ->
-            {fail, Error}
-    end).
+-define(DEC_JSON(JsonData), west_utils:dec_json(JsonData)).

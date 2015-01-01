@@ -32,7 +32,6 @@
          keyfind/3,
          parse_query_string/1,
          get_prop/3,
-         validate_json/1,
          props_for_types/2,
          format_datetime/2,
          parse_datetime/1,
@@ -41,34 +40,31 @@
          bin_to_hex/1,
          hmac/3,
          build_name/1,
+         random_hash/1,
+         random_string/1,
          iolist_to_atom/1,
-         start_app_deps/1]).
+         start_app_deps/1,
+         dec_json/1,
+         enc_json/1]).
 
 %% Types
 -type tuple_list() :: [{any(), any()}].
+-type json_term()  :: [json_term()] | {[json_term()]} |
+                      [{binary() | atom() | integer(), json_term()}] |
+                      integer() | float() | binary() | atom().
 
 %%%===================================================================
 %%% API
 %%%===================================================================
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Calls keyfind/3 with Default = undefined.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Calls keyfind/3 with Default = undefined.
 -spec keyfind(any(), tuple_list()) -> term().
 keyfind(Key, TupleList) ->
     keyfind(Key, TupleList, undefined).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Searches the list of tuples TupleList for a tuple whose Nth element
-%% compares equal to Key. Returns Tuple's value if such a tuple is
-%% found, otherwise Default.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Searches the list of tuples TupleList for a tuple whose Nth element
+%%      compares equal to Key. Returns Tuple's value if such a tuple is
+%%      found, otherwise Default.
 -spec keyfind(any(), tuple_list(), any()) -> term().
 keyfind(Key, TupleList, Default) ->
     case lists:keyfind(Key, 1, TupleList) of
@@ -76,17 +72,11 @@ keyfind(Key, TupleList, Default) ->
         _       -> Default
     end.
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Parse a given query string and returns a key/value pair list.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Parse a given query string and returns a key/value pair list.
 -spec parse_query_string(string()) -> [{string(), string()}] | error.
 parse_query_string(Str) ->
     F = fun(Q) ->
-            [{K, V} || [K, V] <-
-             [string:tokens(L, "=") || L <- string:tokens(Q, "&")]]
+            [{K, V} || [K, V] <- [string:tokens(L, "=") || L <- string:tokens(Q, "&")]]
         end,
     case string:tokens(Str, "?") of
         [_, X] -> F(X);
@@ -94,13 +84,7 @@ parse_query_string(Str) ->
         _      -> error
     end.
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Gets a property given by Name and if it doesn't exist, returns
-%% Default.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Gets a property given by Name and if it doesn't exist, returns Default.
 -spec get_prop(string(), list(), string()) -> term().
 get_prop(Name, Props, Default) ->
     case lists:keyfind(Name, 1, Props) of
@@ -108,47 +92,18 @@ get_prop(Name, Props, Default) ->
         _       -> Default
     end.
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Validates a Json string using mochijson2.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec validate_json(iolist()) -> term().
-validate_json(Json) ->
-    try
-        mochijson2:decode(Json)
-    catch
-        throw:invalid_utf8 ->
-            {fail, "Invalid JSON: Illegal UTF-8 character"};
-        error:Error ->
-            {fail, "Invalid JSON: " ++ binary_to_list(
-                list_to_binary(io_lib:format("~p", [Error])))}
-    end.
-
-%%--------------------------------------------------------------------
-%% @doc
-%% Filter all values in Props that match with some value in Types.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Filter all values in Props that match with some value in Types.
 -spec props_for_types(list(), list()) -> list().
 props_for_types(Types, Props) ->
-    Fun =
-        fun(Type, Acc) ->
+    F = fun(Type, Acc) ->
             case lists:keyfind(Type, 1, Props) of
                 {_, Param} -> [{Type, Param}] ++ Acc;
-                _       -> Acc
+                _          -> Acc
             end
         end,
-    lists:foldl(Fun, [], Types).
+    lists:foldl(F, [], Types).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Format the given DateTime with the format specified in the atom().
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Format the given DateTime with the format specified in the atom().
 -spec format_datetime(atom(), calendar:datetime()) -> string().
 format_datetime(iso8601, DateTime) ->
     {{Year, Month, Day}, {Hour, Min, Sec}} = DateTime,
@@ -162,120 +117,102 @@ format_datetime(yyyymmdd, DateTime) ->
 format_datetime(rfc1123, DateTime) ->
     httpd_util:rfc1123_date(DateTime).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Converts a date string into datetime() format.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Converts a date string into datetime() format.
 -spec parse_datetime(string()) -> term().
 parse_datetime(DateStr) ->
     httpd_util:convert_request_date(DateStr).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Returns a timestamp in milliseconds.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Returns a timestamp in milliseconds.
 -spec get_timestamp_ms() -> integer().
 get_timestamp_ms() ->
     {Mega, Sec, Micro} = os:timestamp(),
     (Mega * 1000000 + Sec) * 1000000 + Micro.
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Parse a given ms timestamp to os:timestamp() format.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Parse a given ms timestamp to os:timestamp() format.
 -spec parse_timestamp_ms(integer()) -> {integer(), integer(), integer()}.
 parse_timestamp_ms(Timestamp) ->
     {Timestamp div 1000000000000,
      Timestamp div 1000000 rem 1000000,
      Timestamp rem 1000000}.
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Converts the given binary to hex string.
-%%
+%% @doc Converts the given binary to hex string.
 %% @see [hd(integer_to_list(Nibble, 16)) || <<Nibble:4>> <= B]
-%%
-%% @end
-%%--------------------------------------------------------------------
 -spec bin_to_hex(binary()) -> string().
 bin_to_hex(B) when is_binary(B) ->
     bin_to_hex(B, []).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Wrap original hmac/3 from erlang crypto module, and converts it
-%% result into hex string to return it.
-%%
+%% @doc Wrap original hmac/3 from erlang crypto module, and converts it
+%%      result into hex string to return it.
 %% @see Erlang crypto:hmac(Type, Key, Data).
-%%
-%% @end
-%%--------------------------------------------------------------------
 -spec hmac(atom(), iodata(), iodata()) -> string().
 hmac(Type, Key, Data) ->
     bin_to_hex(crypto:hmac(Type, Key, Data)).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Hash the given list and return an atom representation of that hash.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Hash the given list and return an atom representation of that hash.
 -spec build_name(list()) -> atom().
 build_name(L) when is_list(L) ->
     binary_to_atom(<<(<<"p">>)/binary,
-                     (integer_to_binary(erlang:phash2(L)))/binary>>, utf8).
+    (integer_to_binary(erlang:phash2(L)))/binary>>, utf8).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Converts an iolist to atom.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Generates a random hash hex-string.
+-spec random_hash(atom()) -> string().
+random_hash(Hash) ->
+    Ts = lists:flatten(io_lib:format("~p", [erlang:phash2(os:timestamp())])),
+    string:to_upper(bin_to_hex(crypto:hash(Hash, Ts))).
+
+%% @doc Generates a random string.
+-spec random_string(integer()) -> string().
+random_string(Len) ->
+    <<A1:32, A2:32, A3:32>> = crypto:strong_rand_bytes(12),
+    random:seed({A1, A2, A3}),
+    %%Chrs = list_to_tuple("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"),
+    Chrs = list_to_tuple("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"),
+    ChrsSize = size(Chrs),
+    F = fun(_, R) -> [element(random:uniform(ChrsSize), Chrs) | R] end,
+    lists:foldl(F, "", lists:seq(1, Len)).
+
+%% @doc Converts an iolist to atom.
 -spec iolist_to_atom(iolist()) -> atom().
-iolist_to_atom(IoList) when is_list(IoList); is_binary(IoList) ->
-    case IoList of
-        IoList when is_binary(IoList) ->
-            binary_to_atom(IoList, utf8);
-        IoList when is_list(IoList) ->
-            list_to_atom(IoList);
-        _ ->
-            throw({error, "Invalid type."})
+iolist_to_atom(IoList) when is_binary(IoList) ->
+    binary_to_atom(IoList, utf8);
+iolist_to_atom(IoList) when is_list(IoList) ->
+    list_to_atom(IoList).
+
+%% @doc Starts the given application, starting recursively all its
+%%      application dependencies. Returns a list with all started
+%%      applications.
+-spec start_app_deps(App :: atom()) -> StartedApps :: list().
+start_app_deps(App) ->
+    case application:start(App) of
+        {error, {not_started, Dep}} -> start_app_deps([Dep|[App]], []);
+        {error, {Reason, _}}        -> [{Reason, App}];
+        ok                          -> [{ok, App}]
+    end.
+start_app_deps([], Acc) ->
+    Acc;
+start_app_deps([H|T]=L, Acc) ->
+    case application:start(H) of
+        {error, {not_started, Dep}} -> start_app_deps([Dep|L], Acc);
+        {error, {Reason, _}}        -> start_app_deps(T, [{Reason, H}|Acc]);
+        ok                          -> start_app_deps(T, [{ok, H}|Acc])
     end.
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Starts the given application, starting recursively all its
-%% application dependencies. Returns a list with all started
-%% applications.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec start_app_deps(App :: atom()) -> StartedApps :: list().
-start_app_deps(App) when is_atom(App) ->
-    case application:start(App) of
-        {error, {not_started, Dep}} ->
-            start_app_deps([Dep|[App]], []);
-        {error, {Reason, _}} ->
-            [{Reason, App}];
-        ok ->
-            [{ok, App}]
+%% @doc Decode a JSON iodata into JSON term.
+-spec dec_json(iolist()) -> json_term().
+dec_json(Json) ->
+    try
+        jiffy:decode(Json)
+    catch
+        _:_ -> {error, invalid_json}
     end.
-start_app_deps([]=_L, Acc) when is_list(_L) ->
-    Acc;
-start_app_deps([H|T]=L, Acc) when is_list(L) ->
-    case application:start(H) of
-        {error, {not_started, Dep}} ->
-            start_app_deps([Dep|L], Acc);
-        {error, {Reason, _}} ->
-            start_app_deps(T, [{Reason, H}|Acc]);
-        ok ->
-            start_app_deps(T, [{ok, H}|Acc])
+
+%% @doc Encode a JSON term into a JSON IOstring.
+-spec enc_json(json_term()) -> iolist().
+enc_json(JsonTerm) ->
+    try
+        jiffy:encode(JsonTerm)
+    catch
+        _:_ -> {error, invalid_json_term}
     end.
 
 %%%===================================================================

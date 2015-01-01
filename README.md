@@ -43,22 +43,26 @@ with centralized model (Broker, ESB, MoM, etc.), implementing a real P2P communi
 
 About the infrastructure used by WEST:
 
-* `gproc` (process dictionary for Erlang) serves as messaging infrastructure. WEST implements messaging patterns like Pub/Sub
+* [Gproc](https://github.com/uwiger/gproc) (process dictionary for Erlang) serves as messaging infrastructure. WEST implements messaging patterns like Pub/Sub
   and Req/Rep using `gproc`.
 
-* `riak_core` is used by WEST to run in distributed way. In this case, `gproc` runs locally on each node, and with
+* [Jiffy](https://github.com/davisp/jiffy) is used as JSON encoder/decoder.
+
+* [Protobuffs](https://github.com/basho/erlang_protobuffs) is used for Google Protocol Buffers support.
+
+* [Riak Core](https://github.com/basho/riak_core) is used by WEST to run in distributed way. In this case, `gproc` runs locally on each node, and with
   `riak_core` WEST creates a Sharding topology, storing data records (channel keys in this case) across multiple
   gproc instances. Optionally, you can also configure more advanced topologies like Sharding + Peer-To-Peer Replication (like Riak).
   WEST runs by default with replication factor 1.
 
-* `cowboy` or `yaws` serves as web server, in order to provide WebSockets infrastructure mainly.
+* [YAWS](http://yaws.hyber.org) or [Cowboy](http://ninenines.eu) serves as web server, in order to provide WebSockets infrastructure mainly.
 
 
 
 Dependencies
 ------------
 
-WEST has main dependencies such as: `gproc`, `mochiweb`, and `protobuffs`. These dependencies are fetched by default.
+WEST has main dependencies such as: `gproc`, `jiffy`, and `protobuffs`. These dependencies are fetched by default.
 Due to WEST exposes a WebSocket API, `cowboy` dependency is fetched too, despite to be complementary (can be skip it if you want).
 
 There are others complementary dependencies like `yaws` and `riak_core`. Since most people don't actively use either,
@@ -330,15 +334,6 @@ model based on `gen_leader` (see [Gproc](https://github.com/uwiger/gproc)).
         {[ok,ok,ok],[]}
 
 However, is recommended run `west` in distributed fashion with `gproc` local and `riak_core` support.
-
-
-
-Implementation Notes
---------------------
-
-### Top-level layers view ###
-
-![LayerArch](./doc/assets/west_arch_layer_view.png)
 
 
 

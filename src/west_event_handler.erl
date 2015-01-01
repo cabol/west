@@ -65,188 +65,97 @@
 %%% API
 %%%===================================================================
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Start a gen_server to register the subscription and handle events.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec start_link(scope(), cb_spec(), proplist()) ->
-                 {ok, pid()} | {error, term()}.
+%% @doc Start a gen_server to register the subscription and handle
+%%      events.
+-spec start_link(scope(), cb_spec(), proplist()) -> {ok, pid()} | {error, term()}.
 start_link(Scope, CallbackSpec, Opts) ->
     gen_server:start_link(?MODULE, [Scope, CallbackSpec, Opts], []).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Create a message-driven handler to handle incoming messages. This
-%% new process is added to the supervisor's tree.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec create(scope(), cb_spec(), proplist()) ->
-             {ok, pid()} | {error, term()}.
+%% @doc Create a message-driven handler to handle incoming messages.
+%%      This new process is added to the supervisor's tree.
+-spec create(scope(), cb_spec(), proplist()) -> supervisor:startchild_ret().
 create(Scope, CallbackSpec, Opts) ->
     west_event_handler_sup:start_child(Scope, CallbackSpec, Opts).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Register to a point-to-point channel with name `Key'. All incoming
-%% events to the channel `Key' will be handle them by this process.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Register to a point-to-point channel with name `Key'.
+%%      All incoming events to the channel `Key' will be handle them
+%%      by this process.
 -spec reg(server_ref(), key()) -> {ok, key()} | {error, term()}.
 reg(ServerRef, Key) ->
     gen_server:call(ServerRef, {reg, Key}).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Same as previous, but the register is executed distributed.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec reg(dist_spec(), server_ref(), key()) ->
-          {ok, key()} | {error, term()}.
+%% @doc Same as previous, but the register is executed distributed.
+-spec reg(dist_spec(), server_ref(), key()) -> {ok, key()} | {error, term()}.
 reg(DistSpec, ServerRef, Key) ->
     gen_server:call(ServerRef, {reg_dist, DistSpec, ServerRef, Key}).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Unregister from a point-to-point channel with name `Key'. This
-%% process won't handle incoming events to channel `Key' any more.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Unregister from a point-to-point channel with name `Key'. This
+%%      process won't handle incoming events to the channel any more.
 -spec unreg(server_ref(), key()) -> {ok, key()} | {error, term()}.
 unreg(ServerRef, Key) ->
     gen_server:call(ServerRef, {unreg, Key}).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Same as previous, but the unregister is executed distributed.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec unreg(dist_spec(), server_ref(), key()) ->
-            {ok, key()} | {error, term()}.
+%% @doc Same as previous, but the unregister is executed distributed.
+-spec unreg(dist_spec(), server_ref(), key()) -> {ok, key()} | {error, term()}.
 unreg(DistSpec, ServerRef, Key) ->
     gen_server:call(ServerRef, {unreg_dist, DistSpec, ServerRef, Key}).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Send the message `Msg' to point-to-point channel `Key'. Just one
-%% consumer will receive this message.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec send(server_ref(), any(), key(), msg()) ->
-           {ok, key()} | {error, term()}.
+%% @doc Send the message `Msg' to point-to-point channel `Key'.
+%%      Just one consumer will receive this message.
+-spec send(server_ref(), any(), key(), msg()) -> {ok, key()} | {error, term()}.
 send(ServerRef, Id, Key, Msg) ->
     gen_server:call(ServerRef, {send, Id, Key, Msg}).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Same as previous, but the send is executed distributed.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec send(dist_spec(), server_ref(), any(), key(), msg()) ->
-           {ok, key()} | {error, term()}.
+%% @doc Same as previous, but the send is executed distributed.
+-spec send(dist_spec(), server_ref(), any(), key(), msg()) -> {ok, key()} | {error, term()}.
 send(DistSpec, ServerRef, Id, Key, Msg) ->
     gen_server:call(ServerRef, {send_dist, DistSpec, Id, Key, Msg}).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Subscribe to a pub/sub channel `Event'. All incoming events to the
-%% channel `Event' will be handle them by this process.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Subscribe to a pub/sub channel `Event'. All incoming events
+%%      to the channel `Event' will be handle them by this process.
 -spec subscribe(server_ref(), event()) -> {ok, event()} | {error, term()}.
 subscribe(ServerRef, Event) ->
     gen_server:call(ServerRef, {subscribe, Event}).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Same as previous, but the subscription is executed distributed.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec subscribe(dist_spec(), server_ref(), key()) ->
-                {ok, key()} | {error, term()}.
+%% @doc Same as previous, but subscription is executed distributed.
+-spec subscribe(dist_spec(), server_ref(), key()) -> {ok, key()} | {error, term()}.
 subscribe(DistSpec, ServerRef, Event) ->
     gen_server:call(ServerRef, {subscribe_dist, DistSpec, ServerRef, Event}).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Delete a subscription from a pub/sub channel `Event'. This process
-%% won't handle incoming events to channel `Event' any more.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Delete a subscription from a pub/sub channel `Event'. This
+%%      process won't handle incoming events to channel `Event'
+%%      any more.
 -spec unsubscribe(server_ref(), event()) -> {ok, event()} | {error, term()}.
 unsubscribe(ServerRef, Event) ->
     gen_server:call(ServerRef, {unsubscribe, Event}).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Same as previous, but the unsubscription is executed distributed.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec unsubscribe(dist_spec(), server_ref(), key()) ->
-                  {ok, key()} | {error, term()}.
+%% @doc Same as previous, but unsubscription is executed distributed.
+-spec unsubscribe(dist_spec(), server_ref(), key()) -> {ok, key()} | {error, term()}.
 unsubscribe(DistSpec, ServerRef, Event) ->
     gen_server:call(ServerRef, {unsubscribe_dist, DistSpec, ServerRef, Event}).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Publish the message `Msg' to all subscribers to a pub/sub channel
-%% `Event'.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Publish the message `Msg' to all subscribers to a pub/sub
+%%      channel `Event'.
 -spec publish(server_ref(), any(), event(), msg()) -> ok.
 publish(ServerRef, ETag, Event, Msg) ->
     gen_server:cast(ServerRef, {publish, ETag, Event, Msg}).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Same as previous, but the publish is executed distributed.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Same as previous, but publish is executed distributed.
 -spec publish(dist_spec(), server_ref(), any(), key(), msg()) -> ok.
 publish(DistSpec, ServerRef, ETag, Event, Msg) ->
     gen_server:cast(ServerRef, {publish_dist, DistSpec, ETag, Event, Msg}).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Sets the callback spec and returns the previous one.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec set_callback(server_ref(), cb_spec()) ->
-                   {ok, cb_spec()} | {error, term()}.
+%% @doc Sets the callback spec and returns the previous one.
+-spec set_callback(server_ref(), cb_spec()) -> {ok, cb_spec()} | {error, term()}.
 set_callback(ServerRef, CallbackSpec) ->
     gen_server:call(ServerRef, {set_callback, CallbackSpec}).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Get the events which this server is subscribed.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Get the events which this server is subscribed.
 -spec get_events(server_ref())-> {ok, list()} | {error, term()}.
 get_events(ServerRef) ->
     gen_server:call(ServerRef, get_events).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Stops this gen_server.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Stops this gen_server.
 -spec delete(server_ref()) -> ok.
 delete(ServerRef) ->
     gen_server:cast(ServerRef, delete).
@@ -255,30 +164,15 @@ delete(ServerRef) ->
 %%% gen_server callbacks
 %%%===================================================================
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Initializes the server
-%%
-%% @spec init(Args) -> {ok, State} |
-%%                     {ok, State, Timeout} |
-%%                     ignore |
-%%                     {stop, Reason}
-%% @end
-%%--------------------------------------------------------------------
 init([Scope, CallbackSpec, Opts]) ->
     Monitors = west_utils:keyfind(monitors, Opts, []),
     lists:foreach(fun(I) -> erlang:monitor(process, I) end, Monitors),
     {M, F, A} = CallbackSpec,
     {ok, #state{scope=Scope, cb=?CALLBACK_SPEC{mod=M, func=F, args=A}}}.
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handles the register command.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handles the register command.
 handle_call({reg, Key}, _From, #state{scope=Scope}=S) ->
     case ?REG(Scope, Key) of
         true            -> {reply, {ok, Key}, S};
@@ -286,14 +180,8 @@ handle_call({reg, Key}, _From, #state{scope=Scope}=S) ->
         _               -> {reply, {error, "Unexpected error."}, S}
     end;
 
-
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handles the distributed register command.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handles the distributed register command.
 handle_call({reg_dist, {B, K, Opts}, Name, Key},
             _From,
             #state{scope=Scope}=S) ->
@@ -306,13 +194,8 @@ handle_call({reg_dist, {B, K, Opts}, Name, Key},
         _               -> {reply, {error, "Unexpected error."}, S}
     end;
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handles the unregister command.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handles the unregister command.
 handle_call({unreg, Key}, _From, #state{scope=Scope}=S) ->
     case ?UNREG(Scope, Key) of
         true            -> {reply, {ok, Key}, S};
@@ -320,13 +203,8 @@ handle_call({unreg, Key}, _From, #state{scope=Scope}=S) ->
         _               -> {reply, {error, "Unexpected error."}, S}
     end;
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handles the distributed unregister command.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handles the distributed unregister command.
 handle_call({unreg_dist, {B, K, Opts}, Name, Key},
             _From,
             #state{scope=Scope}=S) ->
@@ -339,13 +217,8 @@ handle_call({unreg_dist, {B, K, Opts}, Name, Key},
         _               -> {reply, {error, "Unexpected error."}, S}
     end;
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handles the send command.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handles the send command.
 handle_call({send, Id, Key, Msg}, _From, #state{scope=Scope}=S) ->
     case ?SEND(Scope, Id, Key, Msg) of
         true            -> {reply, {ok, Key}, S};
@@ -353,13 +226,8 @@ handle_call({send, Id, Key, Msg}, _From, #state{scope=Scope}=S) ->
         _               -> {reply, {error, "Unexpected error."}, S}
     end;
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handles the distributed send command.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handles the distributed send command.
 handle_call({send_dist, {B, K, Opts}, Id, Key, Msg},
             _From,
             #state{scope=Scope}=S) ->
@@ -372,13 +240,8 @@ handle_call({send_dist, {B, K, Opts}, Id, Key, Msg},
         _               -> {reply, {error, "Unexpected error."}, S}
     end;
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handles the subscribe command.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handles the subscribe command.
 handle_call({subscribe, Event},
             _From,
             #state{scope=Scope, events=EvL, cb=Cb}=S) ->
@@ -392,13 +255,8 @@ handle_call({subscribe, Event},
             {reply, {error, "Unexpected error."}, S}
     end;
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handles the distributed subscribe command.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handles the distributed subscribe command.
 handle_call({subscribe_dist, {B, K, Opts}, Name, Event},
             _From,
             #state{scope=Scope, events=EvL, cb=Cb}=S) ->
@@ -416,13 +274,8 @@ handle_call({subscribe_dist, {B, K, Opts}, Name, Event},
             {reply, {error, "Unexpected error."}, S}
     end;
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handles the unsubscribe command.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handles the unsubscribe command.
 handle_call({unsubscribe, Event},
             _From,
             #state{scope=Scope, events=EvL, cb=Cb}=S) ->
@@ -436,13 +289,8 @@ handle_call({unsubscribe, Event},
             {reply, {error, "Unexpected error."}, S}
     end;
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handles the distributed unsubscribe command.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handles the distributed unsubscribe command.
 handle_call({unsubscribe_dist, {B, K, Opts}, Name, Event},
             _From,
             #state{scope=Scope, events=EvL, cb=Cb}=S) ->
@@ -460,13 +308,8 @@ handle_call({unsubscribe_dist, {B, K, Opts}, Name, Event},
             {reply, {error, "Unexpected error."}, S}
     end;
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handles the set_callback command.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handles the set_callback command.
 handle_call({set_callback, {M, F, A}},
             _From,
             #state{scope=Scope, events=EvL, cb=Cb}) ->
@@ -474,44 +317,24 @@ handle_call({set_callback, {M, F, A}},
                              events=EvL,
                              cb=?CALLBACK_SPEC{mod=M, func=F, args=A}}};
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handles the get_events command.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handles the get_events command.
 handle_call(get_events, _From, #state{events=EvL}=S) ->
     {reply, {ok, EvL}, S};
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Unhandled.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Unhandled.
 handle_call(_, _, S) ->
     {reply, badarg, S}.
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handles the publish command.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handles the publish command.
 handle_cast({publish, ETag, Event, Msg}, #state{scope=Scope}=S) ->
     ?PS_PUB(Scope, ETag, Event, Msg),
     {noreply, S};
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handles the distributed publish command.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handles the distributed publish command.
 handle_cast({publish_dist, {B, K, Opts}, ETag, Event, Msg},
             #state{scope=Scope}=S) ->
     F = fun(Arg0, Arg1, Arg2, Arg3) ->
@@ -520,35 +343,21 @@ handle_cast({publish_dist, {B, K, Opts}, ETag, Event, Msg},
     west_dist:cmd(B, K, {none, F, [Scope, ETag, Event, Msg]}, Opts),
     {noreply, S};
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Handles the delete command.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Handles the delete command.
 handle_cast(delete, S) ->
     {stop, normal, S};
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Unhandled.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Unhandled.
 handle_cast(_Msg, S) ->
     {noreply, S}.
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
+%% @doc Handle incoming events.
 %% This callback handle the incoming events from the registered event.
 %% When a message arrives to this `EvKey' the callback functions which
 %% this server was created `#state{cb=#callback{}}' is applied.
-%%
-%% @end
-%%--------------------------------------------------------------------
 handle_info({ETag, EvKey, Msg},
             #state{cb=?CALLBACK_SPEC{mod=M, func=F, args=A}}=S) ->
     case M of
@@ -559,44 +368,24 @@ handle_info({ETag, EvKey, Msg},
     end,
     {noreply, S};
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Monitor has benn triggered, stop this gen_server.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Monitor has benn triggered, stop this gen_server.
 handle_info({'DOWN', _Ref, process, Pid, _Reason}, S) ->
     error_logger:info_msg("gen_server ~p stopped, monitor of ~p triggered.",
                           [self(), Pid]),
     {stop, normal, S};
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Unhandled.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Unhandled.
 handle_info(_, S) ->
     {noreply, S}.
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Finish the gen_server.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Finish the gen_server.
 terminate(_Reason, _State) ->
     ok.
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Unhandled.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Unhandled.
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.

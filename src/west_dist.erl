@@ -42,14 +42,8 @@
 %%% API
 %%%===================================================================
 
-%%--------------------------------------------------------------------
+%% @doc Pings a random vnode to make sure communication is functional.
 %% @spec ping() -> term()
-%%
-%% @doc
-%% Pings a random vnode to make sure communication is functional.
-%%
-%% @end
-%%--------------------------------------------------------------------
 ping() ->
     DocIdx = riak_core_util:chash_key({<<"ping">>, term_to_binary(now())}),
     PrefList = riak_core_apl:get_primary_apl(DocIdx, 1, west),
@@ -58,96 +52,49 @@ ping() ->
                                               ping,
                                               west_dist_vnode_master).
 
-%%--------------------------------------------------------------------
-%% @spec cmd(Bucket, Key, Val) ->
-%%           {Res, ReqID} | {Res, ReqID, Reason} | {error, timeout}
-%%
-%% Types:
-%%    Bucket = binary()
-%%    Key = binary()
-%%    Val = {Ref, Key, CbSpec}
-%%
-%% @equiv cmd(Bucket, Key, Val, [])
-%%
 %% @doc
 %% Executes the command given in the `Val' spec.
-%%
-%% Bucket: Bucket to calculate hash (Riak Core).
-%% Key: Key to calculate hash (Riak Core).
-%% Val: Value that will be received by VNode.
-%%
-%% @see `west_dist_vnode'
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @equiv cmd(Bucket, Key, Val, [])
 cmd(Bucket, Key, Val) ->
     cmd(Bucket, Key, Val, []).
 
-%%--------------------------------------------------------------------
-%% @spec cmd(Bucket, Key, Val, Opts) ->
-%%           {Res, ReqID} | {Res, ReqID, Reason} | {error, timeout}
-%%
-%% Types:
-%%    Bucket = binary()
-%%    Key = binary()
-%%    Val = {Ref, Key, CbSpec}
-%%    Opts = proplist()
-%%
 %% @doc
 %% Same as previous but it can receive option list.
-%%
-%% Bucket: Bucket to calculate hash (Riak Core).
-%% Key: Key to calculate hash (Riak Core).
-%% Val: Value that will be received by VNode.
+%% <li>Bucket: Bucket to calculate hash (Riak Core).
+%% <li>Key: Key to calculate hash (Riak Core).
+%% <li>Val: Value that will be received by VNode.
+%% <li>
 %% Opts: Option list.
-%%    q = quorum
-%%    n = replicas
-%%    Example: [{q, 1}, {n, 1}]
+%% q = quorum
+%% n = replicas
+%% Example: <code>[{q, 1}, {n, 1}]</code>
+%% </li>
 %%
-%% @see `west_dist_vnode'
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @spec cmd(Bucket, Key, Val, Opts) ->
+%%           {Res, ReqID} | {Res, ReqID, Reason} | {error, timeout}
+%% Bucket = binary()
+%% Key = binary()
+%% Val = {Ref, Key, CbSpec}
+%% Opts = proplist()
 cmd(Bucket, Key, Val, Opts) ->
     do_write(Bucket, Key, cmd, Val, Opts).
 
-%%--------------------------------------------------------------------
-%% @spec get_dbg_preflist(Bucket, Key) -> term()
-%%
-%% Types:
-%%    Bucket = binary()
-%%    Key = binary()
-%%
 %% @doc
 %% Gets the preflist with default number of nodes (replicas).
-%%
-%% Bucket: Bucket to calculate hash (Riak Core).
-%% Key: Key to calculate hash (Riak Core).
-%%
-%% @see `west_dist_vnode'
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @equiv get_dbg_preflist(Bucket, Key, ?N)
 get_dbg_preflist(Bucket, Key) ->
     get_dbg_preflist(Bucket, Key, ?N).
 
-%%--------------------------------------------------------------------
-%% @spec get_dbg_preflist(Bucket, Key, N) -> term()
-%%
-%% Types:
-%%    Bucket = binary()
-%%    Key = binary()
-%%    N = non_neg_integer()
-%%
 %% @doc
 %% Same as previous but it can receive the number of replicas (nodes).
+%% <li>Bucket: Bucket to calculate hash (Riak Core).</li>
+%% <li>Key: Key to calculate hash (Riak Core).</li>
+%% <li>N: Number of replicas.</li>
 %%
-%% Bucket: Bucket to calculate hash (Riak Core).
-%% Key: Key to calculate hash (Riak Core).
-%% N: Number of replicas.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @spec get_dbg_preflist(Bucket, Key, N) -> term()
+%% Bucket = binary()
+%% Key = binary()
+%% N = non_neg_integer()
 get_dbg_preflist(Bucket, Key, N) ->
     DocIdx = riak_core_util:chash_key({iolist_to_binary(Bucket),
                                        iolist_to_binary(Key)}),
@@ -157,26 +104,16 @@ get_dbg_preflist(Bucket, Key, N) ->
 %%% Internal Functions
 %%%===================================================================
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Execute the command against the FSM.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Execute the command against the FSM.
 do_write(Bucket, Key, Op, Val, Opts) ->
     BBucket = iolist_to_binary(Bucket),
     BKey = iolist_to_binary(Key),
     {ok, ReqID} = west_dist_cmd_fsm:cmd(BBucket, BKey, Op, Val, Opts),
     wait_for_reqid(ReqID, ?TIMEOUT).
 
-%%--------------------------------------------------------------------
 %% @private
-%% @doc
-%% Waits for the FMS response.
-%%
-%% @end
-%%--------------------------------------------------------------------
+%% @doc Waits for the FMS response.
 wait_for_reqid(ReqID, Timeout) ->
     receive
         {Code, ReqID} ->
