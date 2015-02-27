@@ -12,7 +12,7 @@ clean:
 	./rebar clean
 
 eunit:
-	./rebar skip_deps=true eunit
+	./rebar skip_deps=true compile eunit
 
 test: eunit
 

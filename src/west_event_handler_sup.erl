@@ -47,12 +47,12 @@
 %%      incoming events to this subscription.
 -spec start_link() -> supervisor:startlink_ret().
 start_link() ->
-    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+  supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
 %% @doc Starts a new child `west_event_handler'.
 -spec start_child(scope(), cb_spec(), proplist()) -> supervisor:startchild_ret().
 start_child(Scope, CallbackSpec, Opts) ->
-    supervisor:start_child(?SERVER, [Scope, CallbackSpec, Opts]).
+  supervisor:start_child(?SERVER, [Scope, CallbackSpec, Opts]).
 
 %%%===================================================================
 %%% Supervisor callbacks
@@ -60,12 +60,12 @@ start_child(Scope, CallbackSpec, Opts) ->
 
 %% @private
 init(_Args) ->
-    Element = {west_event_handler,
-               {west_event_handler, start_link, []},
-               transient,
-               brutal_kill,
-               worker,
-               [west_event_handler]},
-    Children = [Element],
-    RestartStrategy = {simple_one_for_one, 10, 60},
-    {ok, {RestartStrategy, Children}}.
+  Element = {west_event_handler,
+             {west_event_handler, start_link, []},
+             transient,
+             brutal_kill,
+             worker,
+             [west_event_handler]},
+  Children = [Element],
+  RestartStrategy = {simple_one_for_one, 10, 60},
+  {ok, {RestartStrategy, Children}}.

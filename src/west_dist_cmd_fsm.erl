@@ -33,10 +33,8 @@
 -include("west.hrl").
 
 %% API
--export([start_link/5,
-         start_link/7,
-         cmd/3,
-         cmd/5]).
+-export([start_link/5, start_link/7,
+         cmd/3, cmd/5]).
 
 %% Callbacks
 -export([init/1,
@@ -47,9 +45,7 @@
          terminate/3]).
 
 %% States
--export([prepare/2,
-         execute/2,
-         waiting/2]).
+-export([prepare/2, execute/2, waiting/2]).
 
 %% State
 -record(state, {req_id :: pos_integer(),
@@ -88,7 +84,7 @@
 %%
 %% @equiv start_link(ReqID, From, Bucket, Key, Op, undefined, [])
 start_link(ReqID, From, Bucket, Key, Op) ->
-    start_link(ReqID, From, Bucket, Key, Op, undefined, []).
+  start_link(ReqID, From, Bucket, Key, Op, undefined, []).
 
 %% @doc start_link/7.
 %% Same of the previous function but, it can receive value and
@@ -117,7 +113,7 @@ start_link(ReqID, From, Bucket, Key, Op) ->
 %% Val = any()
 %% Opts = proplist()
 start_link(ReqID, From, Bucket, Key, Op, Val, Opts) ->
-    gen_fsm:start_link(?MODULE, [ReqID, From, Bucket, Key, Op, Val, Opts], []).
+  gen_fsm:start_link(?MODULE, [ReqID, From, Bucket, Key, Op, Val, Opts], []).
 
 %% @doc cmd/3.
 %% Start the FSM in order to execute the given command.
@@ -133,7 +129,7 @@ start_link(ReqID, From, Bucket, Key, Op, Val, Opts) ->
 %%
 %% @equiv cmd(Bucket, Key, Op, undefined, [])
 cmd(Bucket, Key, Op) ->
-    cmd(Bucket, Key, Op, undefined, []).
+  cmd(Bucket, Key, Op, undefined, []).
 
 %% @doc cmd/5.
 %% Same of previous but with value and option list.
@@ -156,15 +152,16 @@ cmd(Bucket, Key, Op) ->
 %% Val = any()
 %% Opts = proplist()
 cmd(Bucket, Key, Op, Val, Opts) ->
-    ReqID = mk_reqid(),
-    west_dist_cmd_fsm_sup:start_cmd_fsm([ReqID,
-                                         self(),
-                                         Bucket,
-                                         Key,
-                                         Op,
-                                         Val,
-                                         Opts]),
-    {ok, ReqID}.
+  ReqID = mk_reqid(),
+  west_dist_cmd_fsm_sup:start_cmd_fsm(
+    [ReqID,
+    self(),
+    Bucket,
+    Key,
+    Op,
+    Val,
+    Opts]),
+  {ok, ReqID}.
 
 %%%===================================================================
 %%% States
@@ -172,79 +169,80 @@ cmd(Bucket, Key, Op, Val, Opts) ->
 
 %% @private
 init([ReqID, From, Bucket, Key, Op, Val, Opts]) ->
-    Q = west_utils:keyfind(q, Opts, ?W),
-    N = west_utils:keyfind(n, Opts, ?N),
-    SD = #state{req_id=ReqID,
-                from=From,
-                bkey={Bucket, Key},
-                op=Op,
-                val=Val,
-                n=N,
-                q=Q},
-    {ok, prepare, SD, 0}.
+  Q = west_utils:keyfind(q, Opts, ?W),
+  N = west_utils:keyfind(n, Opts, ?N),
+  SD = #state{req_id = ReqID,
+              from = From,
+              bkey = {Bucket, Key},
+              op = Op,
+              val = Val,
+              n = N,
+              q = Q},
+  {ok, prepare, SD, 0}.
 
 %% @private
 %% @doc Prepare the write by calculating the _preference list_.
-prepare(timeout, SD0=#state{bkey=BKey, n=N}) ->
-    DocIdx = riak_core_util:chash_key(BKey),
-    PrefList = riak_core_apl:get_apl(DocIdx, N, west),
-    SD = SD0#state{preflist=PrefList},
-    {next_state, execute, SD, 0}.
+prepare(timeout, SD0 = #state{bkey = BKey, n = N}) ->
+  DocIdx = riak_core_util:chash_key(BKey),
+  PrefList = riak_core_apl:get_apl(DocIdx, N, west),
+  SD = SD0#state{preflist = PrefList},
+  {next_state, execute, SD, 0}.
 
 %% @private
 %% @doc Execute the command request and then go into waiting state to
 %%      verify it has meets consistency requirements.
 execute(timeout,
-        SD0=#state{req_id=ReqID, op=Op, val=Val, preflist=PrefList}) ->
-    case Val of
-        undefined ->
-            west_dist_vnode:Op(PrefList, ReqID);
-        _ ->
-            west_dist_vnode:Op(PrefList, ReqID, Val)
-    end,
-    {next_state, waiting, SD0}.
+        SD0 = #state{req_id = ReqID, op = Op, val = Val, preflist = PrefL}) ->
+  case Val of
+    undefined ->
+      west_dist_vnode:Op(PrefL, ReqID);
+    _ ->
+      west_dist_vnode:Op(PrefL, ReqID, Val)
+  end,
+  {next_state, waiting, SD0}.
 
 %% @private
 %% @doc Wait for Q write reqs to respond.
 waiting({_Res, ReqID, Val},
-        SD0=#state{from=From, num_q=NumQ0, q=Q, replies=Replies0}) ->
-    NumQ = NumQ0 + 1,
-    Replies = [Val|Replies0],
-    SD = SD0#state{num_q=NumQ, replies=Replies},
-    if
-        NumQ =:= Q ->
-            Reply = case lists:any(different(Val), Replies) of
-                        true  -> Replies;
-                        false -> Val
-                    end,
-            From ! {ok, ReqID, Reply},
-            {stop, normal, SD};
-        true -> {next_state, waiting, SD}
-    end.
+        SD0 = #state{from = From, num_q = NumQ0, q = Q, replies = Replies0}) ->
+  NumQ = NumQ0 + 1,
+  Replies = [Val | Replies0],
+  SD = SD0#state{num_q = NumQ, replies = Replies},
+  case NumQ =:= Q of
+    true ->
+      Reply = case lists:any(different(Val), Replies) of
+                true -> Replies;
+                false -> Val
+              end,
+      From ! {ok, ReqID, Reply},
+      {stop, normal, SD};
+    false ->
+      {next_state, waiting, SD}
+  end.
 
 %% @private
 %% @doc If any event info is received, FSM finish.
 handle_info(_Info, _StateName, StateData) ->
-    {stop, badmsg, StateData}.
+  {stop, badmsg, StateData}.
 
 %% @private
 %% @doc If any event is received, FSM finish.
 handle_event(_Event, _StateName, StateData) ->
-    {stop, badmsg, StateData}.
+  {stop, badmsg, StateData}.
 
 %% @private
 %% @doc If any event is received, FSM finish.
 handle_sync_event(_Event, _From, _StateName, StateData) ->
-    {stop, badmsg, StateData}.
+  {stop, badmsg, StateData}.
 
 %% @private
 %% @doc Convert process state when code is changed.
 code_change(_OldVsn, StateName, State, _Extra) ->
-    {ok, StateName, State}.
+  {ok, StateName, State}.
 
 %% @private
 terminate(_Reason, _SN, _SD) ->
-    ok.
+  ok.
 
 %%%===================================================================
 %%% Internal Functions

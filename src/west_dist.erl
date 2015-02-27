@@ -45,18 +45,16 @@
 %% @doc Pings a random vnode to make sure communication is functional.
 %% @spec ping() -> term()
 ping() ->
-    DocIdx = riak_core_util:chash_key({<<"ping">>, term_to_binary(now())}),
-    PrefList = riak_core_apl:get_primary_apl(DocIdx, 1, west),
-    [{IdxNode, _Type}] = PrefList,
-    riak_core_vnode_master:sync_spawn_command(IdxNode,
-                                              ping,
-                                              west_dist_vnode_master).
+  DocIdx = riak_core_util:chash_key({<<"ping">>, term_to_binary(now())}),
+  PrefList = riak_core_apl:get_primary_apl(DocIdx, 1, west),
+  [{IdxNode, _Type}] = PrefList,
+  riak_core_vnode_master:sync_spawn_command(IdxNode, ping, west_dist_vnode_master).
 
 %% @doc
 %% Executes the command given in the `Val' spec.
 %% @equiv cmd(Bucket, Key, Val, [])
 cmd(Bucket, Key, Val) ->
-    cmd(Bucket, Key, Val, []).
+  cmd(Bucket, Key, Val, []).
 
 %% @doc
 %% Same as previous but it can receive option list.
@@ -77,13 +75,13 @@ cmd(Bucket, Key, Val) ->
 %% Val = {Ref, Key, CbSpec}
 %% Opts = proplist()
 cmd(Bucket, Key, Val, Opts) ->
-    do_write(Bucket, Key, cmd, Val, Opts).
+  do_write(Bucket, Key, cmd, Val, Opts).
 
 %% @doc
 %% Gets the preflist with default number of nodes (replicas).
 %% @equiv get_dbg_preflist(Bucket, Key, ?N)
 get_dbg_preflist(Bucket, Key) ->
-    get_dbg_preflist(Bucket, Key, ?N).
+  get_dbg_preflist(Bucket, Key, ?N).
 
 %% @doc
 %% Same as previous but it can receive the number of replicas (nodes).
@@ -96,9 +94,9 @@ get_dbg_preflist(Bucket, Key) ->
 %% Key = binary()
 %% N = non_neg_integer()
 get_dbg_preflist(Bucket, Key, N) ->
-    DocIdx = riak_core_util:chash_key({iolist_to_binary(Bucket),
-                                       iolist_to_binary(Key)}),
-    riak_core_apl:get_apl(DocIdx, N, west).
+  DocIdx = riak_core_util:chash_key({iolist_to_binary(Bucket),
+    iolist_to_binary(Key)}),
+  riak_core_apl:get_apl(DocIdx, N, west).
 
 %%%===================================================================
 %%% Internal Functions
@@ -107,27 +105,27 @@ get_dbg_preflist(Bucket, Key, N) ->
 %% @private
 %% @doc Execute the command against the FSM.
 do_write(Bucket, Key, Op, Val, Opts) ->
-    BBucket = iolist_to_binary(Bucket),
-    BKey = iolist_to_binary(Key),
-    {ok, ReqID} = west_dist_cmd_fsm:cmd(BBucket, BKey, Op, Val, Opts),
-    wait_for_reqid(ReqID, ?TIMEOUT).
+  BBucket = iolist_to_binary(Bucket),
+  BKey = iolist_to_binary(Key),
+  {ok, ReqID} = west_dist_cmd_fsm:cmd(BBucket, BKey, Op, Val, Opts),
+  wait_for_reqid(ReqID, ?TIMEOUT).
 
 %% @private
 %% @doc Waits for the FMS response.
 wait_for_reqid(ReqID, Timeout) ->
-    receive
-        {Code, ReqID} ->
-            Code;
-        {_Code, ReqID, Reply} ->
-            case is_list(Reply) of
-                true ->
-                    case lists:keyfind(ok, 1, Reply) of
-                        {_, V} -> V;
-                        _      -> lists:last(Reply)
-                    end;
-                _ ->
-                    Reply
-            end
-    after Timeout ->
-	    {error, timeout}
-    end.
+  receive
+    {Code, ReqID} ->
+      Code;
+    {_Code, ReqID, Reply} ->
+      case is_list(Reply) of
+        true ->
+          case lists:keyfind(ok, 1, Reply) of
+            {_, V} -> V;
+            _ -> lists:last(Reply)
+          end;
+        _ ->
+          Reply
+      end
+  after Timeout ->
+    {error, timeout}
+  end.

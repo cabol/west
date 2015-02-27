@@ -25,7 +25,7 @@
 %%% @end
 %%% Created : 03. Oct 2013 6:13 PM
 %%%-------------------------------------------------------------------
--module(west_msg_utils).
+-module(west_msg).
 
 %% API
 -export([parse_msg/1, format_msg/1, build_msg/6]).
@@ -41,34 +41,34 @@
 %%      parsed `?MSG' record.
 %% @spec parse_msg(Json :: iodata()) -> Reply :: msg_spec()
 parse_msg(Json) ->
-    case ?DEC_JSON(Json) of
-        {error, _} ->
-            {error, <<"Invalid JSON, error at decode.">>};
-        {DecJson} ->
-            try
-                Event = west_utils:keyfind(<<"event">>, DecJson),
-                Ch = west_utils:keyfind(<<"channel">>, DecJson),
-                From = west_utils:keyfind(<<"from">>, DecJson),
-                Id = west_utils:keyfind(<<"id">>, DecJson),
-                Data = west_utils:keyfind(<<"data">>, DecJson),
-                ?MSG{event=Event, channel=Ch, from=From, id=Id, data=Data}
-            catch
-                _:_ -> {error, <<"Parsing error.">>}
-            end
-    end.
+  case ?DEC_JSON(Json) of
+    {error, _} ->
+      {error, invalid_json};
+    {DecJson} ->
+      try
+        Event = west_utils:keyfind(<<"event">>, DecJson),
+        Ch = west_utils:keyfind(<<"channel">>, DecJson),
+        From = west_utils:keyfind(<<"from">>, DecJson),
+        Id = west_utils:keyfind(<<"id">>, DecJson),
+        Data = west_utils:keyfind(<<"data">>, DecJson),
+        ?MSG{event = Event, channel = Ch, from = From, id = Id, data = Data}
+      catch
+        _:_ -> {error, decoding_error}
+      end
+  end.
 
 %% @doc Formats the given message `Msg' and return the Json
 %%      representation as iodata.
 %% @spec format_msg(Msg :: msg_spec()) -> Reply :: iodata()
 format_msg(Msg) ->
-    ?MSG{event=Ev, channel=Ch, from=From, id=Id, data=Data} = Msg,
-    L0 = [{event, Ev}, {channel, Ch}, {from, From}, {id, Id}, {data, Data}],
-    F = fun(X) when is_atom(X) -> atom_to_binary(X, utf8);
-           (X) when is_list(X) orelse is_binary(X) -> iolist_to_binary(X);
-           (X) -> iolist_to_binary(lists:flatten(io_lib:format("~p", [X])))
-        end,
-    L = [{F(X), F(Y)} || {X, Y} <- L0, Y =/= undefined],
-    ?ENC_JSON({L}).
+  ?MSG{event = Ev, channel = Ch, from = From, id = Id, data = Data} = Msg,
+  L0 = [{event, Ev}, {channel, Ch}, {from, From}, {id, Id}, {data, Data}],
+  F = fun(X) when is_atom(X) -> atom_to_binary(X, utf8);
+         (X) when is_list(X) orelse is_binary(X) -> iolist_to_binary(X);
+         (X) -> iolist_to_binary(lists:flatten(io_lib:format("~p", [X])))
+      end,
+  L = [{F(X), F(Y)} || {X, Y} <- L0, Y =/= undefined],
+  ?ENC_JSON({L}).
 
 %% @doc Build a `?MSG' with the given arguments, and format that
 %%      message and return a Json as iodata if `Format' is json.
@@ -80,15 +80,15 @@ format_msg(Msg) ->
 %% Data = iolist() | undefined
 %% Format = atom()
 build_msg(Id, From, Event, Channel, Data, Format) ->
-    Msg = ?MSG{event=Event, channel=Channel, from=From, id=Id, data=Data},
-    case Format of
-        json ->
-            case format_msg(Msg) of
-                {error, _} ->
-                    <<"{\"from\":\"west\", \"event\":\"internal_error\"}">>;
-                Enc ->
-                    Enc
-            end;
-        _ ->
-            Msg
-    end.
+  Msg = ?MSG{event = Event, channel = Channel, from = From, id = Id, data = Data},
+  case Format of
+    json ->
+      case format_msg(Msg) of
+        {error, _} ->
+          <<"{\"from\":\"west\", \"event\":\"internal_error\"}">>;
+        Enc ->
+          Enc
+      end;
+    _ ->
+      Msg
+  end.
