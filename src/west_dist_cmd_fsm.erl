@@ -154,13 +154,7 @@ cmd(Bucket, Key, Op) ->
 cmd(Bucket, Key, Op, Val, Opts) ->
   ReqID = mk_reqid(),
   west_dist_cmd_fsm_sup:start_cmd_fsm(
-    [ReqID,
-    self(),
-    Bucket,
-    Key,
-    Op,
-    Val,
-    Opts]),
+    [ReqID, self(), Bucket, Key, Op, Val, Opts]),
   {ok, ReqID}.
 
 %%%===================================================================
@@ -169,8 +163,8 @@ cmd(Bucket, Key, Op, Val, Opts) ->
 
 %% @private
 init([ReqID, From, Bucket, Key, Op, Val, Opts]) ->
-  Q = west_utils:keyfind(q, Opts, ?W),
-  N = west_utils:keyfind(n, Opts, ?N),
+  Q = west_util:keyfind(q, Opts, ?W),
+  N = west_util:keyfind(n, Opts, ?N),
   SD = #state{req_id = ReqID,
               from = From,
               bkey = {Bucket, Key},

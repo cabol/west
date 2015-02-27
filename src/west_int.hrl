@@ -170,6 +170,6 @@
   end
 ).
 
--define(ENC_JSON(JsonTerm), west_utils:enc_json(JsonTerm)).
+-define(ENC_JSON(JsonTerm), west_util:enc_json(JsonTerm)).
 
--define(DEC_JSON(JsonData), west_utils:dec_json(JsonData)).
+-define(DEC_JSON(JsonData), west_util:dec_json(JsonData)).

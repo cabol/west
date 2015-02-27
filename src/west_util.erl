@@ -25,7 +25,7 @@
 %%% @end
 %%% Created : 07. Oct 2013 9:30 PM
 %%%-------------------------------------------------------------------
--module(west_utils).
+-module(west_util).
 
 %% API
 -export([keyfind/2, keyfind/3, parse_query_string/1,
@@ -34,7 +34,7 @@
         parse_timestamp_ms/1, hash_string/2, bin_to_hex/1,
         hmac/3, build_name/1, random_hash/1,
         random_string/1, strong_rand/1, next_id/1,
-        iolist_to_atom/1, iolist_to_integer/1, iolist_to_float/1,
+        to_bin/1, to_atom/1, to_integer/1, to_float/1,
         start_app_deps/1, dec_json/1, enc_json/1]).
 
 
@@ -150,10 +150,11 @@ hmac(Type, Key, Data) ->
   bin_to_hex(crypto:hmac(Type, Key, Data)).
 
 %% @doc Hash the given list and return an atom representation of that hash.
--spec build_name(list()) -> atom().
+-spec build_name([any()]) -> atom().
 build_name(L) when is_list(L) ->
-  binary_to_atom(
-    <<(<<"p">>)/binary, (integer_to_binary(erlang:phash2(L)))/binary>>, utf8).
+  F = fun(X, Acc) -> <<Acc/binary, (<<"_">>)/binary, (to_bin(X))/binary>> end,
+  Suffix = lists:foldl(F, <<"">>, L),
+  binary_to_atom(<<(<<"p">>)/binary, Suffix/binary>>, utf8).
 
 %% @doc Generates a random hash hex-string.
 -spec random_hash(atom()) -> string().
@@ -188,26 +189,53 @@ strong_rand(N) ->
 next_id(Prefix) ->
   <<Prefix/binary, (iolist_to_binary(random_string(32)))/binary>>.
 
-%% @doc Converts an iolist to atom.
--spec iolist_to_atom(iolist()|list()|atom()) -> atom().
-iolist_to_atom(Data) when is_binary(Data) -> binary_to_atom(Data, utf8);
-iolist_to_atom(Data) when is_list(Data) -> list_to_atom(Data);
-iolist_to_atom(Data) when is_atom(Data) -> Data;
-iolist_to_atom(Data) -> Data.
+%% @doc Converts any type to binary.
+-spec to_bin(any()) -> atom().
+to_bin(Data) when is_integer(Data) ->
+  integer_to_binary(Data);
+to_bin(Data) when is_float(Data) ->
+  float_to_binary(Data);
+to_bin(Data) when is_atom(Data) ->
+  atom_to_binary(Data, utf8);
+to_bin(Data) when is_list(Data) ->
+  iolist_to_binary(Data);
+to_bin(Data) when is_pid(Data); is_reference(Data); is_tuple(Data) ->
+  integer_to_binary(erlang:phash2(Data));
+to_bin(Data) ->
+  Data.
 
-%% @doc Converts an iolist to integer.
--spec iolist_to_integer(iolist()) -> integer().
-iolist_to_integer(Data) when is_binary(Data) -> binary_to_integer(Data);
-iolist_to_integer(Data) when is_list(Data) -> list_to_integer(Data);
-iolist_to_integer(Data) when is_integer(Data) -> Data;
-iolist_to_integer(Data) -> Data.
+%% @doc Converts any type to atom.
+-spec to_atom(any()) -> atom().
+to_atom(Data) when is_binary(Data) ->
+  binary_to_atom(Data, utf8);
+to_atom(Data) when is_list(Data) ->
+  list_to_atom(Data);
+to_atom(Data) when is_pid(Data); is_reference(Data); is_tuple(Data) ->
+  list_to_atom(integer_to_list(erlang:phash2(Data)));
+to_atom(Data) ->
+  Data.
 
-%% @doc Converts an iolist to float.
--spec iolist_to_float(iolist()) -> float().
-iolist_to_float(Data) when is_binary(Data) -> binary_to_float(Data);
-iolist_to_float(Data) when is_list(Data) -> list_to_float(Data);
-iolist_to_float(Data) when is_float(Data) -> Data;
-iolist_to_float(Data) -> Data.
+%% @doc Converts any type to integer.
+-spec to_integer(any()) -> integer().
+to_integer(Data) when is_binary(Data) ->
+  binary_to_integer(Data);
+to_integer(Data) when is_list(Data) ->
+  list_to_integer(Data);
+to_integer(Data) when is_pid(Data); is_reference(Data); is_tuple(Data) ->
+  erlang:phash2(Data);
+to_integer(Data) ->
+  Data.
+
+%% @doc Converts any type to float.
+-spec to_float(any()) -> float().
+to_float(Data) when is_binary(Data) ->
+  binary_to_float(Data);
+to_float(Data) when is_list(Data) ->
+  list_to_float(Data);
+to_float(Data) when is_pid(Data); is_reference(Data); is_tuple(Data) ->
+  erlang:phash2(Data);
+to_float(Data) ->
+  Data.
 
 %% @doc Starts the given application, starting recursively all its
 %%      application dependencies. Returns a list with all started

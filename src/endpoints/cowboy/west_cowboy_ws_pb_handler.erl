@@ -46,7 +46,7 @@
 -include("west.hrl").
 -include("../../west_protocol.hrl").
 
--record(state, {server = ?WEST_SERVER{}, nb_texts = 0, nb_bins = 0}).
+-record(state, {server = ?WEST{}, nb_texts = 0, nb_bins = 0}).
 
 %%%===================================================================
 %%% WS callback
@@ -77,29 +77,29 @@ websocket_init(_TransportName, Req, _Opts) ->
   DistProps = application:get_env(west, dist_props, [{opts, [{n, 1}, {q, 1}]}]),
   case cowboy_req:binding(key, Req) of
     {Key, _} ->
-      Name = west_utils:build_name([Key, self(), os:timestamp()]),
+      Name = west_util:build_name([Key, self(), west_util:get_timestamp_ms()]),
       register(Name, self()),
       CbSpec = {?MODULE, ev_callback, [{Name, node()}, undefined]},
-      {ok, Req, #state{server = ?WEST_SERVER{name = Name,
+      {ok, Req, #state{server = ?WEST{name = Name,
                                              key = Key,
                                              dist = Dist,
                                              dist_props = DistProps,
                                              scope = Scope,
                                              cb = CbSpec,
-                                             format = pb}}};
+                                             encoding = pb}}};
     _ ->
       {shutdown, Req}
   end.
 
 websocket_handle({binary, Msg},
                  Req,
-                 #state{nb_bins = M, server = ?WEST_SERVER{key = K}} = S) ->
+                 #state{nb_bins = M, server = ?WEST{key = K}} = S) ->
   ?LOG_INFO("Received binary msg (M=~p): ~p bytes~n", [M, byte_size(Msg)]),
   try
     DecMsg = message_pb:decode_message(Msg),
-    Cmd = west_utils:iolist_to_atom(DecMsg#message.event),
+    Cmd = west_util:to_atom(DecMsg#msg_t.event),
     ?LOG_INFO(
-      "[~p] ~p ~p~n", [K, DecMsg#message.event, DecMsg#message.channel]),
+      "[~p] ~p ~p~n", [K, DecMsg#msg_t.event, DecMsg#msg_t.channel]),
     case west_protocol_handler:handle_event(Cmd, DecMsg, S#state.server) of
       {ok, Res} ->
         BinRes = iolist_to_binary(message_pb:encode_message(Res)),
@@ -108,8 +108,8 @@ websocket_handle({binary, Msg},
         BinErr = iolist_to_binary(message_pb:encode_message(Err)),
         {reply, {binary, BinErr}, Req, S#state{nb_bins = M + 1}};
       _ ->
-        Err1 = ?RES_ACTION_NOT_ALLOWED(DecMsg#message.id,
-          DecMsg#message.channel,
+        Err1 = ?RES_ACTION_NOT_ALLOWED(DecMsg#msg_t.id,
+          DecMsg#msg_t.channel,
           pb),
         BinErr1 = iolist_to_binary(message_pb:encode_message(Err1)),
         {reply, {binary, BinErr1}, Req, S#state{nb_bins = M + 1}}

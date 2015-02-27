@@ -43,7 +43,7 @@
 -include("west.hrl").
 -include("../../west_protocol.hrl").
 
--record(state, {server = ?WEST_SERVER{}, nb_texts = 0, nb_bins = 0}).
+-record(state, {server = ?WEST{}, nb_texts = 0, nb_bins = 0}).
 
 %%%===================================================================
 %%% WS callback
@@ -58,16 +58,16 @@ init([Arg, InitialState]) ->
   DistProps = application:get_env(west, dist_props, [{opts, [{n, 1}, {q, 1}]}]),
   case string:tokens(yaws_api:arg_pathinfo(Arg), "/") of
     [_, Key] ->
-      Name = west_utils:build_name([Key, self(), os:timestamp()]),
+      Name = west_util:build_name([Key, self(), west_util:get_timestamp_ms()]),
       register(Name, self()),
       CbSpec = {?MODULE, ev_callback, [{Name, node()}, undefined]},
-      {ok, #state{server = ?WEST_SERVER{name = Name,
+      {ok, #state{server = ?WEST{name = Name,
                                         key = Key,
                                         dist = Dist,
                                         dist_props = DistProps,
                                         scope = Scope,
                                         cb = CbSpec,
-                                        format = json}}};
+                                        encoding = json}}};
     _ ->
       Err = "{\"event\":\"bad_request\", "
       "\"data\":\"Error, missing key in path.\"}",
@@ -96,16 +96,16 @@ handle_message({text, <<"bye">>}, #state{nb_texts = N, nb_bins = M} = S) ->
 %% @doc This function is called when a TEXT message is received.
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
 handle_message({text, Msg},
-#state{nb_texts = N, server = ?WEST_SERVER{key = K}} = S) ->
+#state{nb_texts = N, server = ?WEST{key = K}} = S) ->
   ?LOG_INFO("Received text msg (N=~p): ~p bytes~n", [N, byte_size(Msg)]),
-  case west_msg:parse_msg(Msg) of
+  case west_msg:dec_msg(Msg, json) of
     {error, Reason} ->
       {reply, {text, Reason}, S#state{nb_texts = N + 1}};
     ParsedMsg ->
       ?LOG_INFO(
         "[~p] ~p ~p~n",
-        [K, ParsedMsg#message.event, ParsedMsg#message.channel]),
-      Cmd = binary_to_atom(ParsedMsg#message.event, utf8),
+        [K, ParsedMsg#msg_t.event, ParsedMsg#msg_t.channel]),
+      Cmd = binary_to_atom(ParsedMsg#msg_t.event, utf8),
       case west_protocol_handler:handle_event(Cmd, ParsedMsg, S#state.server) of
         {ok, Response} ->
           {reply, {text, Response}, S#state{nb_texts = N + 1}};

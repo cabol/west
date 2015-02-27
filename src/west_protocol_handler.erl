@@ -40,18 +40,17 @@
 
 %% @private
 %% @doc Handle the ping event.
-handle_event(ping, ?MSG{id = Id}, ?WEST_SERVER{format = F}) ->
+handle_event(ping, ?MSG{id = Id}, ?WEST{encoding = F}) ->
   {ok, ?RES_PONG(Id, F)};
 
 %% @private
 %% @doc Handle the register event.
 handle_event(register,
              ?MSG{id = Id, channel = Ch},
-             ?WEST_SERVER{name = Name, scope = Sc, cb = Cb, format = F} = WS) ->
+             ?WEST{name = Name, scope = Sc, cb = Cb, encoding = F} = WS) ->
   case Ch =/= undefined of
     true ->
-      Ev = west_utils:iolist_to_atom(Ch),
-      Val = {west_lib, reg, [Sc, {Name, node()}, Ev, Cb]},
+      Val = {west_lib, reg, [Sc, {Name, node()}, Ch, Cb]},
       case execute(WS, Ch, Ch, Val) of
         {error, _} ->
           {error, ?RES_INTERNAL_ERROR(Id, F)};
@@ -72,11 +71,10 @@ handle_event(register,
 %% @doc Handle the unregister event.
 handle_event(unregister,
              ?MSG{id = Id, channel = Ch},
-             ?WEST_SERVER{name = Name, format = F} = WS) ->
+             ?WEST{name = Name, encoding = F} = WS) ->
   case Ch =/= undefined of
     true ->
-      Ev = west_utils:iolist_to_atom(Ch),
-      Val = {west_lib, unreg, [{Name, node()}, Ev]},
+      Val = {west_lib, unreg, [{Name, node()}, Ch]},
       case execute(WS, Ch, Ch, Val) of
         {error, _} ->
           {error, ?RES_INTERNAL_ERROR(Id, F)};
@@ -95,11 +93,10 @@ handle_event(unregister,
 %% @doc Handle the send event.
 handle_event(send,
              ?MSG{id = Id, channel = Ch, data = Data},
-             ?WEST_SERVER{key = K, scope = Scope, format = F} = WS) ->
+             ?WEST{key = K, scope = Scope, encoding = F} = WS) ->
   case Ch =/= undefined andalso Data =/= undefined of
     true ->
-      Ev = west_utils:iolist_to_atom(Ch),
-      Val = {west_lib, send, [Scope, K, Ev, Data]},
+      Val = {west_lib, send, [Scope, K, Ch, Data]},
       case execute(WS, Ch, Ch, Val) of
         {error, _} ->
           {error, ?RES_INTERNAL_ERROR(Id, F)};
@@ -115,33 +112,13 @@ handle_event(send,
   end;
 
 %% @private
-%% @doc Handle the publish event.
-handle_event(publish,
-             ?MSG{id = Id, channel = Ch, data = Data},
-             ?WEST_SERVER{key = K, dist = Dist, format = F}) ->
-  case Ch =/= undefined andalso Data =/= undefined of
-    true ->
-      Event = west_utils:iolist_to_atom(Ch),
-      case Dist of
-        gproc_dist ->
-          ?PS_PUB(g, K, Event, Data);
-        _ ->
-          ?PS_PUB_ALL(l, K, Event, Data)
-      end,
-      {ok, ?RES_PUB_OK(Id, Ch, F)};
-    _ ->
-      {error, ?RES_PUB_FAILED(Id, Ch, F)}
-  end;
-
-%% @private
 %% @doc Handle the subscribe event.
 handle_event(subscribe,
              ?MSG{id = Id, channel = Ch},
-             ?WEST_SERVER{name = Name, key = K, scope = Sc, cb = Cb, format = F} = WS) ->
+             ?WEST{name = Name, key = K, scope = Sc, cb = Cb, encoding = F} = WS) ->
   case Ch =/= undefined of
     true ->
-      Ev = west_utils:iolist_to_atom(Ch),
-      Val = {west_lib, sub, [Sc, {Name, node()}, Ev, Cb]},
+      Val = {west_lib, sub, [Sc, {Name, node()}, Ch, Cb]},
       case execute(WS, K, Ch, Val) of
         {error, _} ->
           {error, ?RES_INTERNAL_ERROR(Id, F)};
@@ -162,11 +139,10 @@ handle_event(subscribe,
 %% @doc Handle the unsubscribe event.
 handle_event(unsubscribe,
              ?MSG{id = Id, channel = Ch},
-             ?WEST_SERVER{name = Name, key = K, format = F} = WS) ->
+             ?WEST{name = Name, key = K, encoding = F} = WS) ->
   case Ch =/= undefined of
     true ->
-      Ev = west_utils:iolist_to_atom(Ch),
-      Val = {west_lib, unsub, [{Name, node()}, Ev]},
+      Val = {west_lib, unsub, [{Name, node()}, Ch]},
       case execute(WS, K, Ch, Val) of
         {error, _} ->
           {error, ?RES_INTERNAL_ERROR(Id, F)};
@@ -182,6 +158,24 @@ handle_event(unsubscribe,
   end;
 
 %% @private
+%% @doc Handle the publish event.
+handle_event(publish,
+             ?MSG{id = Id, channel = Ch, data = Data},
+             ?WEST{key = K, dist = Dist, encoding = F}) ->
+  case Ch =/= undefined andalso Data =/= undefined of
+    true ->
+      case Dist of
+        gproc_dist ->
+          ?PS_PUB(g, K, Ch, Data);
+        _ ->
+          ?PS_PUB_ALL(l, K, Ch, Data)
+      end,
+      {ok, ?RES_PUB_OK(Id, Ch, F)};
+    _ ->
+      {error, ?RES_PUB_FAILED(Id, Ch, F)}
+  end;
+
+%% @private
 %% @doc Unhandled events.
 handle_event(Any, _Msg, _State) ->
   {none, Any}.
@@ -192,10 +186,10 @@ handle_event(Any, _Msg, _State) ->
 
 %% @private
 %% @doc Executes the asked command.
-execute(?WEST_SERVER{dist = Dist, dist_props = PL}, B, K, {M, F, A} = Val) ->
+execute(?WEST{dist = Dist, dist_props = PL}, B, K, {M, F, A} = Val) ->
   case Dist of
     west_dist ->
-      Opts = west_utils:keyfind(opts, PL, []),
+      Opts = west_util:keyfind(opts, PL, []),
       apply(west_dist, cmd, [B, K, Val, Opts]);
     _ ->
       apply(M, F, A)

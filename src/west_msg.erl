@@ -28,67 +28,57 @@
 -module(west_msg).
 
 %% API
--export([parse_msg/1, format_msg/1, build_msg/6]).
+-export([dec_msg/2, enc_msg/2, build_msg/6]).
 
 -include("west.hrl").
 -include("west_int.hrl").
+
+-type field() :: atom() | binary() | iolist().
 
 %%%===================================================================
 %%% API
 %%%===================================================================
 
-%% @doc Parse the `Json' representation of a `?MSG' and return the
-%%      parsed `?MSG' record.
-%% @spec parse_msg(Json :: iodata()) -> Reply :: msg_spec()
-parse_msg(Json) ->
-  case ?DEC_JSON(Json) of
+-spec dec_msg(any(), atom()) -> msg_spec().
+dec_msg(Data, Encoding) ->
+  dec_msg1(Data, Encoding).
+
+-spec enc_msg(msg_spec(), atom()) -> any().
+enc_msg(Msg, Encoding) ->
+  enc_msg1(Msg, Encoding).
+
+-spec build_msg(field(), field(), field(), field(), field(), atom()) -> any().
+build_msg(Id, From, Event, Channel, Data, Encoding) ->
+  Msg = ?MSG{id = Id, from = From, event = Event, channel = Channel, data = Data},
+  enc_msg(Msg, Encoding).
+
+%%%===================================================================
+%%% Internals
+%%%===================================================================
+
+%% @private
+dec_msg1(Data, json) ->
+  case ?DEC_JSON(Data) of
     {error, _} ->
       {error, invalid_json};
     {DecJson} ->
       try
-        Event = west_utils:keyfind(<<"event">>, DecJson),
-        Ch = west_utils:keyfind(<<"channel">>, DecJson),
-        From = west_utils:keyfind(<<"from">>, DecJson),
-        Id = west_utils:keyfind(<<"id">>, DecJson),
-        Data = west_utils:keyfind(<<"data">>, DecJson),
+        Id = west_util:keyfind(<<"id">>, DecJson),
+        From = west_util:keyfind(<<"from">>, DecJson),
+        Event = west_util:to_atom(west_util:keyfind(<<"event">>, DecJson)),
+        Ch = west_util:keyfind(<<"channel">>, DecJson),
+        Data = west_util:keyfind(<<"data">>, DecJson),
         ?MSG{event = Event, channel = Ch, from = From, id = Id, data = Data}
       catch
         _:_ -> {error, decoding_error}
       end
-  end.
+  end;
+dec_msg1(Data, _) ->
+  Data.
 
-%% @doc Formats the given message `Msg' and return the Json
-%%      representation as iodata.
-%% @spec format_msg(Msg :: msg_spec()) -> Reply :: iodata()
-format_msg(Msg) ->
-  ?MSG{event = Ev, channel = Ch, from = From, id = Id, data = Data} = Msg,
-  L0 = [{event, Ev}, {channel, Ch}, {from, From}, {id, Id}, {data, Data}],
-  F = fun(X) when is_atom(X) -> atom_to_binary(X, utf8);
-         (X) when is_list(X) orelse is_binary(X) -> iolist_to_binary(X);
-         (X) -> iolist_to_binary(lists:flatten(io_lib:format("~p", [X])))
-      end,
-  L = [{F(X), F(Y)} || {X, Y} <- L0, Y =/= undefined],
-  ?ENC_JSON({L}).
-
-%% @doc Build a `?MSG' with the given arguments, and format that
-%%      message and return a Json as iodata if `Format' is json.
-%% @spec build_msg(Id, From, Event, Channel, Data, Format) -> Reply :: iodata()
-%% Id = iolist() | undefined
-%% From = iolist() | undefined
-%% Event = iolist() | undefined
-%% Channel = iolist() | undefined
-%% Data = iolist() | undefined
-%% Format = atom()
-build_msg(Id, From, Event, Channel, Data, Format) ->
-  Msg = ?MSG{event = Event, channel = Channel, from = From, id = Id, data = Data},
-  case Format of
-    json ->
-      case format_msg(Msg) of
-        {error, _} ->
-          <<"{\"from\":\"west\", \"event\":\"internal_error\"}">>;
-        Enc ->
-          Enc
-      end;
-    _ ->
-      Msg
-  end.
+%% @private
+enc_msg1(Msg, json) ->
+  F = ?record_to_list(msg_t),
+  ?ENC_JSON({F(Msg)});
+enc_msg1(Msg, _) ->
+  Msg.

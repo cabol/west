@@ -58,7 +58,7 @@
 %% Key = atom()
 %% CbSpec = {Mod :: atom(), Fun :: atom(), Args :: list()}
 reg(Scope, Ref, Key, CbSpec) ->
-  Name = west_utils:build_name([Ref, Key]),
+  Name = west_util:build_name([Ref, Key]),
   case whereis(Name) of
     undefined ->
       {ok, Pid} = west_event_handler:create(Scope, CbSpec, [{monitors, [Ref]}]),
@@ -87,7 +87,7 @@ reg(Scope, Ref, Key, CbSpec) ->
 %%
 %% @spec unreg(Ref :: any(), Key :: atom()) -> Reply :: term()
 unreg(Ref, Key) ->
-  Name = west_utils:build_name([Ref, Key]),
+  Name = west_util:build_name([Ref, Key]),
   case whereis(Name) of
     undefined ->
       {error, registration_not_found, Key};
@@ -162,7 +162,7 @@ send(Scope, ETag, Key, Msg) ->
 %% Event = atom()
 %% CbSpec = {Mod :: atom(), Fun :: atom(), Args :: list()}
 sub(Scope, Ref, Event, CbSpec) ->
-  Name = west_utils:build_name([Ref, Event]),
+  Name = west_util:build_name([Ref, Event]),
   case whereis(Name) of
     undefined ->
       {ok, Pid} = west_event_handler:create(Scope, CbSpec, [{monitors, [Ref]}]),
@@ -191,7 +191,7 @@ sub(Scope, Ref, Event, CbSpec) ->
 %%
 %% @spec unsub(Ref :: any(), Event :: atom()) -> Reply :: term()
 unsub(Ref, Event) ->
-  Name = west_utils:build_name([Ref, Event]),
+  Name = west_util:build_name([Ref, Event]),
   case whereis(Name) of
     undefined ->
       {error, subscription_not_found, Event};

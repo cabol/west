@@ -42,7 +42,7 @@
 
 -include("west.hrl").
 
--record(state, {server = ?WEST_SERVER{}, nb_texts = 0, nb_bins = 0}).
+-record(state, {server = ?WEST{}, nb_texts = 0, nb_bins = 0}).
 
 %%%===================================================================
 %%% WS callback
@@ -57,16 +57,16 @@ init([Arg, InitialState]) ->
   DistProps = application:get_env(west, dist_props, [{opts, [{n, 1}, {q, 1}]}]),
   case string:tokens(yaws_api:arg_pathinfo(Arg), "/") of
     [_, Key] ->
-      Name = west_utils:build_name([Key, self(), os:timestamp()]),
+      Name = west_util:build_name([Key, self(), west_util:get_timestamp_ms()]),
       register(Name, self()),
       CbSpec = {?MODULE, ev_callback, [{Name, node()}, undefined]},
-      {ok, #state{server = ?WEST_SERVER{name = Name,
+      {ok, #state{server = ?WEST{name = Name,
                                         key = Key,
                                         dist = Dist,
                                         dist_props = DistProps,
                                         scope = Scope,
                                         cb = CbSpec,
-                                        format = text}}};
+                                        encoding = text}}};
     _ ->
       {error, <<"Error, missing key in path.">>}
   end.
@@ -99,7 +99,7 @@ handle_message({text, <<"ping">>}, #state{nb_texts = N} = State) ->
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
 handle_message({text, Msg}, #state{nb_texts = N} = State) ->
   ?LOG_INFO("Received text msg (N=~p): ~p bytes~n", [N, byte_size(Msg)]),
-  case parse_msg(Msg) of
+  case dec_msg(Msg) of
     none ->
       {reply, {text, Msg}, State#state{nb_texts = N + 1}};
     Cmd ->
@@ -205,7 +205,7 @@ handle_event(Any, _State) ->
 
 %% @private
 %% @doc Parse the text-based event.
-parse_msg(Msg) ->
+dec_msg(Msg) ->
   L = [string:strip(X, both, $ ) || X <- string:tokens(binary_to_list(Msg), "\"")],
   case L of
     [C, M] -> string:tokens(C, " ") ++ [M];

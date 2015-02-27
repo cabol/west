@@ -61,7 +61,7 @@ stop(_State) ->
 start_riak_core() ->
   case application:get_env(west, dist) of
     {ok, west_dist} ->
-      west_utils:start_app_deps(riak_core),
+      west_util:start_app_deps(riak_core),
       ok = riak_core:register(west, [{vnode_module, west_dist_vnode}]),
       %%ok = riak_core_ring_events:add_guarded_handler(west_ring_event_handler, []),
       %%ok = riak_core_node_watcher_events:add_guarded_handler(west_node_event_handler, []),
@@ -109,7 +109,7 @@ start_cowboy() ->
     [] ->
       ok;
     _ ->
-      west_utils:start_app_deps(cowboy),
+      west_util:start_app_deps(cowboy),
       Routes = application:get_env(cowboy, routes, cowboy_routes()),
       Dispatch = cowboy_router:compile(Routes),
       TransOpts = application:get_env(cowboy, trans_opts, [{port, 8080}]),

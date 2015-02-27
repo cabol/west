@@ -46,7 +46,7 @@
 
 -define(SERVER, ?MODULE).
 
--record(state, {server=?WEST_SERVER{}, opts}).
+-record(state, {server=?WEST{}, opts}).
 
 -type channel() :: string().
 
@@ -108,14 +108,14 @@ init([Key, CallbackSpec, Opts]) ->
   Dist = application:get_env(west, dist, gproc),
   Scope = ?GPROC_SCOPE(Dist),
   DistProps = application:get_env(west, dist_props, [{opts, [{n, 1}, {q, 1}]}]),
-  Name = west_utils:build_name([Key, self(), os:timestamp()]),
+  Name = west_util:build_name([Key, self(), west_util:get_timestamp_ms()]),
   register(Name, self()),
-  Server = ?WEST_SERVER{name = Name,
-                        key = Key,
-                        dist = Dist,
-                        dist_props = DistProps,
-                        scope = Scope,
-                        cb = CallbackSpec},
+  Server = ?WEST{name = Name,
+                 key = Key,
+                 dist = Dist,
+                 dist_props = DistProps,
+                 scope = Scope,
+                 cb = CallbackSpec},
   {ok, #state{server = Server, opts = Opts}}.
 
 %% @private

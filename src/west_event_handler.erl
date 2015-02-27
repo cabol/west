@@ -53,7 +53,7 @@
 
 -define(SERVER, ?MODULE).
 
--record(state, {scope, events = [], cb = ?CALLBACK_SPEC{}}).
+-record(state, {scope, events = [], cb = ?CALLBACK{}}).
 
 %%%===================================================================
 %%% API
@@ -130,10 +130,10 @@ delete(ServerRef) ->
 
 %% @private
 init([Scope, CallbackSpec, Opts]) ->
-  Monitors = west_utils:keyfind(monitors, Opts, []),
+  Monitors = west_util:keyfind(monitors, Opts, []),
   lists:foreach(fun(I) -> erlang:monitor(process, I) end, Monitors),
   {M, F, A} = CallbackSpec,
-  {ok, #state{scope = Scope, cb = ?CALLBACK_SPEC{mod = M, func = F, args = A}}}.
+  {ok, #state{scope = Scope, cb = ?CALLBACK{mod = M, func = F, args = A}}}.
 
 %% @private
 %% @doc Handles the register command.
@@ -197,7 +197,7 @@ handle_call({unsubscribe, Event},
 handle_call({set_callback, {M, F, A}},
             _From,
             #state{scope = Scope, events = EvL, cb = Cb}) ->
-  CbSpec =  ?CALLBACK_SPEC{mod = M, func = F, args = A},
+  CbSpec =  ?CALLBACK{mod = M, func = F, args = A},
   {reply, {ok, Cb}, #state{scope = Scope, events = EvL, cb = CbSpec}};
 
 %% @private
@@ -232,7 +232,7 @@ handle_cast(_Msg, S) ->
 %% When a message arrives to this `EvKey' the callback functions which
 %% this server was created `#state{cb=#callback{}}' is applied.
 handle_info({ETag, EvKey, Msg},
-            #state{cb = ?CALLBACK_SPEC{mod = M, func = F, args = A}} = S) ->
+            #state{cb = ?CALLBACK{mod = M, func = F, args = A}} = S) ->
   case M of
     none when is_function(F) ->
       apply(F, [{ETag, EvKey, Msg}, A]);
