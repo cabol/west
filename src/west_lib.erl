@@ -29,12 +29,8 @@
 -module(west_lib).
 
 %% API
--export([reg/4,
-         unreg/2,
-         send/4,
-         sub/4,
-         unsub/2,
-         pub/4]).
+-export([reg/4, unreg/2, send/4,
+         sub/4, unsub/2, pub/4]).
 
 -include("west_int.hrl").
 
@@ -62,23 +58,21 @@
 %% Key = atom()
 %% CbSpec = {Mod :: atom(), Fun :: atom(), Args :: list()}
 reg(Scope, Ref, Key, CbSpec) ->
-    Name = west_utils:build_name([Ref, Key]),
-    case whereis(Name) of
-        undefined ->
-            {ok, Pid} = west_event_handler:create(Scope,
-                                                  CbSpec,
-                                                  [{monitors, [Ref]}]),
-            register(Name, Pid),
-            case west_event_handler:reg(Name, Key) of
-                {ok, _} ->
-                    {ok, registration_succeeded, Key};
-                {error, _} ->
-                    west_event_handler:delete(Name),
-                    {error, registration_denied, Key}
-            end;
-        _ ->
-            {error, registration_already_exist, Key}
-    end.
+  Name = west_util:build_name([Ref, Key]),
+  case whereis(Name) of
+    undefined ->
+      {ok, Pid} = west_event_handler:create(Scope, CbSpec, [{monitors, [Ref]}]),
+      register(Name, Pid),
+      case west_event_handler:reg(Name, Key) of
+        {ok, _} ->
+          {ok, registration_succeeded, Key};
+        {error, _} ->
+          west_event_handler:delete(Name),
+          {error, registration_denied, Key}
+      end;
+    _ ->
+      {error, registration_already_exist, Key}
+  end.
 
 %% @doc unreg/2.
 %% Unregister from a point-to-point channel with name `Key'. The
@@ -93,19 +87,19 @@ reg(Scope, Ref, Key, CbSpec) ->
 %%
 %% @spec unreg(Ref :: any(), Key :: atom()) -> Reply :: term()
 unreg(Ref, Key) ->
-    Name = west_utils:build_name([Ref, Key]),
-    case whereis(Name) of
-        undefined ->
-            {error, registration_not_found, Key};
-        Pid ->
-            case ?PROC_TYPE(Pid) of
-                n ->
-                    west_event_handler:delete(Name),
-                    {ok, unregistration_succeeded, Key};
-                _ ->
-                    {error, registration_not_found, Key}
-            end
-    end.
+  Name = west_util:build_name([Ref, Key]),
+  case whereis(Name) of
+    undefined ->
+      {error, registration_not_found, Key};
+    Pid ->
+      case ?PROC_TYPE(Pid) of
+        n ->
+          west_event_handler:delete(Name),
+          {ok, unregistration_succeeded, Key};
+        _ ->
+          {error, registration_not_found, Key}
+      end
+  end.
 
 %% @doc send/4.
 %% Send the message `Msg' to point-to-point channel `Key'. Just one
@@ -126,27 +120,27 @@ unreg(Ref, Key) ->
 %% Key = atom()
 %% Msg = binary() | list()
 send(Scope, ETag, Key, Msg) ->
-    F = fun() ->
-            case ?SEND(Scope, ETag, Key, Msg) of
-                true ->
-                    {ok, sending_succeeded, Key};
-                _ ->
-                    {error, sending_failed, Key}
-            end
-        end,
-    case Scope of
-        g ->
-            case ?WHERE(Scope, Key) of
-                undefined ->
-                    {error, sending_failed, Key};
-                {error, _} ->
-                    {error, sending_failed, Key};
-                _ ->
-                    F()
-            end;
+  F = fun() ->
+        case ?SEND(Scope, ETag, Key, Msg) of
+          true ->
+            {ok, sending_succeeded, Key};
+          _ ->
+            {error, sending_failed, Key}
+        end
+      end,
+  case Scope of
+    g ->
+      case ?WHERE(Scope, Key) of
+        undefined ->
+          {error, sending_failed, Key};
+        {error, _} ->
+          {error, sending_failed, Key};
         _ ->
-            F()
-    end.
+          F()
+      end;
+    _ ->
+      F()
+  end.
 
 %% @doc sub/4.
 %% Subscribe to a pub/sub channel `Event'. All incoming events to the
@@ -168,23 +162,21 @@ send(Scope, ETag, Key, Msg) ->
 %% Event = atom()
 %% CbSpec = {Mod :: atom(), Fun :: atom(), Args :: list()}
 sub(Scope, Ref, Event, CbSpec) ->
-    Name = west_utils:build_name([Ref, Event]),
-    case whereis(Name) of
-        undefined ->
-            {ok, Pid} = west_event_handler:create(Scope,
-                                                  CbSpec,
-                                                  [{monitors, [Ref]}]),
-            register(Name, Pid),
-            case west_event_handler:subscribe(Name, Event) of
-                {ok, _} ->
-                    {ok, subscription_succeeded, Event};
-                {error, _} ->
-                    west_event_handler:delete(Name),
-                    {error, subscription_failed, Event}
-            end;
-        _ ->
-            {error, subscription_already_exist, Event}
-    end.
+  Name = west_util:build_name([Ref, Event]),
+  case whereis(Name) of
+    undefined ->
+      {ok, Pid} = west_event_handler:create(Scope, CbSpec, [{monitors, [Ref]}]),
+      register(Name, Pid),
+      case west_event_handler:subscribe(Name, Event) of
+        {ok, _} ->
+          {ok, subscription_succeeded, Event};
+        {error, _} ->
+          west_event_handler:delete(Name),
+          {error, subscription_failed, Event}
+      end;
+    _ ->
+      {error, subscription_already_exist, Event}
+  end.
 
 %% @doc unsub/2.
 %% Delete a subscription from a pub/sub channel `Event'.The
@@ -199,19 +191,19 @@ sub(Scope, Ref, Event, CbSpec) ->
 %%
 %% @spec unsub(Ref :: any(), Event :: atom()) -> Reply :: term()
 unsub(Ref, Event) ->
-    Name = west_utils:build_name([Ref, Event]),
-    case whereis(Name) of
-        undefined ->
-            {error, subscription_not_found, Event};
-        Pid ->
-            case ?PROC_TYPE(Pid) of
-                p ->
-                    west_event_handler:delete(Name),
-                    {ok, unsubscription_succeeded, Event};
-                _ ->
-                    {error, subscription_not_found, Event}
-            end
-    end.
+  Name = west_util:build_name([Ref, Event]),
+  case whereis(Name) of
+    undefined ->
+      {error, subscription_not_found, Event};
+    Pid ->
+      case ?PROC_TYPE(Pid) of
+        p ->
+          west_event_handler:delete(Name),
+          {ok, unsubscription_succeeded, Event};
+        _ ->
+          {error, subscription_not_found, Event}
+      end
+  end.
 
 %% @doc pub/4.
 %% Publish the message `Msg' to all subscribers to a pub/sub channel
@@ -232,9 +224,9 @@ unsub(Ref, Event) ->
 %% Event = atom()
 %% Msg = binary() | list()
 pub(Scope, ETag, Event, Msg) ->
-    case ?PS_PUB(Scope, ETag, Event, Msg) of
-        true ->
-            {ok, publication_succeeded, Event};
-        _ ->
-            {error, publication_failed, Event}
-    end.
+  case ?PS_PUB(Scope, ETag, Event, Msg) of
+    true ->
+      {ok, publication_succeeded, Event};
+    _ ->
+      {error, publication_failed, Event}
+  end.

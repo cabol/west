@@ -21,51 +21,64 @@
 %%%-------------------------------------------------------------------
 %%% @author Carlos Andres Bolaños R.A. <candres@niagara.io>
 %%% @copyright (C) 2013, <Carlos Andres Bolaños>, All Rights Reserved.
-%%% @doc Supervisor of 'west_event_handler'.
+%%% @doc Common JSON utilities to `WEST'.
 %%% @end
-%%% Created : 03. Oct 2013 9:57 AM
+%%% Created : 03. Oct 2013 6:13 PM
 %%%-------------------------------------------------------------------
--module(west_event_handler_sup).
-
--behaviour(supervisor).
+-module(west_msg).
 
 %% API
--export([start_link/0, start_child/3]).
-
-%% Callback
--export([init/1]).
+-export([dec_msg/2, enc_msg/2, build_msg/6]).
 
 -include("west.hrl").
+-include("west_int.hrl").
 
--define(SERVER, ?MODULE).
+-type field() :: atom() | binary() | iolist().
 
 %%%===================================================================
 %%% API
 %%%===================================================================
 
-%% @doc Start a gen_server to register the subscription and handle
-%%      incoming events to this subscription.
--spec start_link() -> supervisor:startlink_ret().
-start_link() ->
-  supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+-spec dec_msg(any(), atom()) -> msg_spec().
+dec_msg(Data, Encoding) ->
+  dec_msg1(Data, Encoding).
 
-%% @doc Starts a new child `west_event_handler'.
--spec start_child(scope(), cb_spec(), proplist()) -> supervisor:startchild_ret().
-start_child(Scope, CallbackSpec, Opts) ->
-  supervisor:start_child(?SERVER, [Scope, CallbackSpec, Opts]).
+-spec enc_msg(msg_spec(), atom()) -> any().
+enc_msg(Msg, Encoding) ->
+  enc_msg1(Msg, Encoding).
+
+-spec build_msg(field(), field(), field(), field(), field(), atom()) -> any().
+build_msg(Id, From, Event, Channel, Data, Encoding) ->
+  Msg = ?MSG{id = Id, from = From, event = Event, channel = Channel, data = Data},
+  enc_msg(Msg, Encoding).
 
 %%%===================================================================
-%%% Supervisor callbacks
+%%% Internals
 %%%===================================================================
 
 %% @private
-init(_Args) ->
-  Element = {west_event_handler,
-             {west_event_handler, start_link, []},
-             transient,
-             brutal_kill,
-             worker,
-             [west_event_handler]},
-  Children = [Element],
-  RestartStrategy = {simple_one_for_one, 10, 60},
-  {ok, {RestartStrategy, Children}}.
+dec_msg1(Data, json) ->
+  case ?DEC_JSON(Data) of
+    {error, _} ->
+      {error, invalid_json};
+    {DecJson} ->
+      try
+        Id = west_util:keyfind(<<"id">>, DecJson),
+        From = west_util:keyfind(<<"from">>, DecJson),
+        Event = west_util:to_atom(west_util:keyfind(<<"event">>, DecJson)),
+        Ch = west_util:keyfind(<<"channel">>, DecJson),
+        Data = west_util:keyfind(<<"data">>, DecJson),
+        ?MSG{event = Event, channel = Ch, from = From, id = Id, data = Data}
+      catch
+        _:_ -> {error, decoding_error}
+      end
+  end;
+dec_msg1(Data, _) ->
+  Data.
+
+%% @private
+enc_msg1(Msg, json) ->
+  F = ?record_to_list(msg_t),
+  ?ENC_JSON({F(Msg)});
+enc_msg1(Msg, _) ->
+  Msg.

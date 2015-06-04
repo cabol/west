@@ -1,7 +1,7 @@
 {application, west,
  [
   {description, "west"},
-  {vsn, "0.2.1"},
+  {vsn, "0.3.0"},
   {registered, []},
   {applications, [kernel, stdlib, crypto, gproc]},
   {mod, {west_app, []}},

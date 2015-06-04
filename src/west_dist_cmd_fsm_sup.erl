@@ -31,8 +31,7 @@
 -behavior(supervisor).
 
 %% API
--export([start_cmd_fsm/1,
-         start_link/0]).
+-export([start_cmd_fsm/1, start_link/0]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -44,12 +43,12 @@
 %% @doc Starts a new child (worker).
 %% @spec start_cmd_fsm(Args :: list()) -> supervisor:startchild_ret()
 start_cmd_fsm(Args) ->
-    supervisor:start_child(?MODULE, Args).
+  supervisor:start_child(?MODULE, Args).
 
 %% @doc Starts the supervisor
 %% @spec start_link() -> supervisor:startlink_ret()
 start_link() ->
-    supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+  supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 %%%===================================================================
 %%% Supervisor callbacks
@@ -57,10 +56,10 @@ start_link() ->
 
 %% @private
 init([]) ->
-    CmdFsm = {west_dist_cmd_fsm,
-              {west_dist_cmd_fsm, start_link, []},
-              temporary,
-              5000,
-              worker,
-              [west_dist_cmd_fsm]},
-    {ok, {{simple_one_for_one, 10, 10}, [CmdFsm]}}.
+  CmdFsm = {west_dist_cmd_fsm,
+            {west_dist_cmd_fsm, start_link, []},
+            temporary,
+            5000,
+            worker,
+            [west_dist_cmd_fsm]},
+  {ok, {{simple_one_for_one, 10, 10}, [CmdFsm]}}.

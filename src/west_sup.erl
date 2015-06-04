@@ -42,7 +42,7 @@
 %% @doc Starts the `WEST' supervisor.
 -spec start_link() -> supervisor:startlink_ret().
 start_link() ->
-    supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+  supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 %%%===================================================================
 %%% Supervisor Callbacks
@@ -50,7 +50,7 @@ start_link() ->
 
 %% @private
 init([]) ->
-    {ok, {{one_for_one, 5, 10}, process_specs()}}.
+  {ok, {{one_for_one, 5, 10}, process_specs()}}.
 
 %%%===================================================================
 %%% Internal functions
@@ -60,30 +60,28 @@ init([]) ->
 %% @doc Build the process specifications that will be supervised.
 -spec process_specs() -> [supervisor:child_spec()].
 process_specs() ->
-    EvHdlr_sup = {west_event_handler_sup,
-                  {west_event_handler_sup, start_link, []},
-                  permanent,
-                  2000,
-                  supervisor,
-                  [west_event_handler_sup]},
-    Dist = case application:get_env(west, dist) of
-               {ok, west_dist} ->
-                   VMaster = {west_dist_vnode_master,
-                              {riak_core_vnode_master,
-                               start_link,
-                               [west_dist_vnode]},
-                              permanent,
-                              5000,
-                              worker,
-                              [riak_core_vnode_master]},
-                   CmdFSM = {west_dist_cmd_fsm_sup,
-                             {west_dist_cmd_fsm_sup, start_link, []},
-                             permanent,
-                             infinity,
-                             supervisor,
-                             [west_dist_cmd_fsm_sup]},
-                   [VMaster, CmdFSM];
-               _ ->
-                   []
-           end,
-    [EvHdlr_sup] ++ Dist.
+  EvHdlr_sup = {west_event_handler_sup,
+                {west_event_handler_sup, start_link, []},
+                permanent,
+                2000,
+                supervisor,
+                [west_event_handler_sup]},
+  Dist = case application:get_env(west, dist) of
+           {ok, west_dist} ->
+             VMaster = {west_dist_vnode_master,
+                        {riak_core_vnode_master, start_link, [west_dist_vnode]},
+                        permanent,
+                        5000,
+                        worker,
+                        [riak_core_vnode_master]},
+             CmdFSM = {west_dist_cmd_fsm_sup,
+                       {west_dist_cmd_fsm_sup, start_link, []},
+                       permanent,
+                       infinity,
+                       supervisor,
+                       [west_dist_cmd_fsm_sup]},
+             [VMaster, CmdFSM];
+           _ ->
+             []
+         end,
+  [EvHdlr_sup] ++ Dist.

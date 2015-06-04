@@ -43,7 +43,7 @@
 -include("west.hrl").
 -include("../../west_protocol.hrl").
 
--record(state, {server=?WEST_SERVER{}, nb_texts=0, nb_bins=0}).
+-record(state, {server = ?WEST{}, nb_texts = 0, nb_bins = 0}).
 
 %%%===================================================================
 %%% WS callback
@@ -52,86 +52,85 @@
 %% @doc Initialize the internal state of the callback module.
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
 init([Arg, InitialState]) ->
-    ?LOG_INFO("Initalize ~p: ~p~n", [self(), InitialState]),
-    Dist      = application:get_env(west, dist, gproc),
-    Scope     = ?GPROC_SCOPE(Dist),
-    DistProps = application:get_env(west, dist_props, [{opts, [{n, 1}, {q, 1}]}]),
-    case string:tokens(yaws_api:arg_pathinfo(Arg), "/") of
-        [_, Key] ->
-            Name = west_utils:build_name([Key, self(), os:timestamp()]),
-            register(Name, self()),
-            CbSpec = {?MODULE, ev_callback, [{Name, node()}, undefined]},
-            {ok, #state{server=?WEST_SERVER{name=Name,
-                                            key=Key,
-                                            dist=Dist,
-                                            dist_props=DistProps,
-                                            scope=Scope,
-                                            cb=CbSpec,
-                                            format=json}}};
-        _ ->
-            Err = "{\"event\":\"bad_request\", "
-                    "\"data\":\"Error, missing key in path.\"}",
-            {error, iolist_to_binary(Err)}
-    end.
+  ?LOG_INFO("Initalize ~p: ~p~n", [self(), InitialState]),
+  Dist = application:get_env(west, dist, gproc),
+  Scope = ?GPROC_SCOPE(Dist),
+  DistProps = application:get_env(west, dist_props, [{opts, [{n, 1}, {q, 1}]}]),
+  case string:tokens(yaws_api:arg_pathinfo(Arg), "/") of
+    [_, Key] ->
+      Name = west_util:build_name([Key, self(), west_util:get_timestamp_ms()]),
+      register(Name, self()),
+      CbSpec = {?MODULE, ev_callback, [{Name, node()}, undefined]},
+      {ok, #state{server = ?WEST{name = Name,
+                                        key = Key,
+                                        dist = Dist,
+                                        dist_props = DistProps,
+                                        scope = Scope,
+                                        cb = CbSpec,
+                                        encoding = json}}};
+    _ ->
+      Err = "{\"event\":\"bad_request\", "
+      "\"data\":\"Error, missing key in path.\"}",
+      {error, iolist_to_binary(Err)}
+  end.
 
 %% @doc This function is called when the connection is upgraded from
 %%      HTTP to WebSocket.
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-handle_open(WSState, State) ->
-    Response = ?RES_CONN_ESTABLISHED(json),
-    yaws_websockets:send(WSState, {text, Response}),
-    {ok, State}.
+handle_open(WSState, S) ->
+  Response = ?RES_CONN_ESTABLISHED(json),
+  yaws_websockets:send(WSState, {text, Response}),
+  {ok, S}.
 
 %% @doc This function is called when a message <<"bye">> is received.
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-handle_message({text, <<"bye">>}, #state{nb_texts=N, nb_bins=M}=State) ->
-    ?LOG_INFO("bye - Msg processed: ~p text, ~p binary~n", [N, M]),
-    NbTexts = list_to_binary(integer_to_list(N)),
-    NbBins = list_to_binary(integer_to_list(M)),
-    Messages = [{text, <<"Goodbye !">>},
-                {text, <<NbTexts/binary, " text messages received">>},
-                {text, <<NbBins/binary, " binary messages received">>}],
-    {close, {1000, <<"bye">>}, Messages, State};
+handle_message({text, <<"bye">>}, #state{nb_texts = N, nb_bins = M} = S) ->
+  ?LOG_INFO("bye - Msg processed: ~p text, ~p binary~n", [N, M]),
+  NbTexts = list_to_binary(integer_to_list(N)),
+  NbBins = list_to_binary(integer_to_list(M)),
+  Messages = [{text, <<"Goodbye !">>},
+              {text, <<NbTexts/binary, " text messages received">>},
+              {text, <<NbBins/binary, " binary messages received">>}],
+  {close, {1000, <<"bye">>}, Messages, S};
 
 %% @doc This function is called when a TEXT message is received.
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
 handle_message({text, Msg},
-               #state{nb_texts=N, server=?WEST_SERVER{key=K}}=State) ->
-    ?LOG_INFO("Received text msg (N=~p): ~p bytes~n", [N, byte_size(Msg)]),
-    case west_msg_utils:parse_msg(Msg) of
-        {error, Reason} ->
-            {reply, {text, Reason}, State#state{nb_texts=N+1}};
-        ParsedMsg ->
-            ?LOG_INFO("[~p] ~p ~p~n",
-                      [K, ParsedMsg#message.event, ParsedMsg#message.channel]),
-            Cmd = binary_to_atom(ParsedMsg#message.event, utf8),
-            case west_protocol_handler:handle_event(Cmd,
-                                                    ParsedMsg,
-                                                    State#state.server) of
-                {ok, Response} ->
-                    {reply, {text, Response}, State#state{nb_texts=N+1}};
-                {error, Err0} ->
-                    {reply, {text, Err0}, State#state{nb_texts=N+1}};
-                _ ->
-                    ?MSG{id=Id, channel=Ch} = ParsedMsg,
-                    Err1 = ?RES_ACTION_NOT_ALLOWED(Id, Ch, json),
-                    {reply, {text, Err1}, State#state{nb_texts=N+1}}
-            end
-    end;
+#state{nb_texts = N, server = ?WEST{key = K}} = S) ->
+  ?LOG_INFO("Received text msg (N=~p): ~p bytes~n", [N, byte_size(Msg)]),
+  case west_msg:dec_msg(Msg, json) of
+    {error, Reason} ->
+      {reply, {text, Reason}, S#state{nb_texts = N + 1}};
+    ParsedMsg ->
+      ?LOG_INFO(
+        "[~p] ~p ~p~n",
+        [K, ParsedMsg#msg_t.event, ParsedMsg#msg_t.channel]),
+      Cmd = binary_to_atom(ParsedMsg#msg_t.event, utf8),
+      case west_protocol_handler:handle_event(Cmd, ParsedMsg, S#state.server) of
+        {ok, Response} ->
+          {reply, {text, Response}, S#state{nb_texts = N + 1}};
+        {error, Err0} ->
+          {reply, {text, Err0}, S#state{nb_texts = N + 1}};
+        _ ->
+          ?MSG{id = Id, channel = Ch} = ParsedMsg,
+          Err1 = ?RES_ACTION_NOT_ALLOWED(Id, Ch, json),
+          {reply, {text, Err1}, S#state{nb_texts = N + 1}}
+      end
+  end;
 
 %% @doc This function is called when a binary message is received.
 %%      NOT HANDLED by this handler.
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-handle_message({binary, Msg}, #state{nb_bins=M}=State) ->
-    ?LOG_INFO("Received binary msg (M=~p): ~p bytes~n", [M, byte_size(Msg)]),
-    {reply, {binary, <<"bad_encoding">>}, State#state{nb_bins=M+1}};
+handle_message({binary, Msg}, #state{nb_bins = M} = S) ->
+  ?LOG_INFO("Received binary msg (M=~p): ~p bytes~n", [M, byte_size(Msg)]),
+  {reply, {binary, <<"bad_encoding">>}, S#state{nb_bins = M + 1}};
 
 %% @doc When the client closes the connection, the callback module is
 %%      notified with the message {close, Status, Reason}
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
 handle_message({close, Status, Reason}, _) ->
-    ?LOG_INFO("Close connection: ~p - ~p~n", [Status, Reason]),
-    {close, Status}.
+  ?LOG_INFO("Close connection: ~p - ~p~n", [Status, Reason]),
+  {close, Status}.
 
 %% @doc
 %% If defined, this function is called when a timeout occurs or when
@@ -140,19 +139,19 @@ handle_message({close, Status, Reason}, _) ->
 %% Info is either the atom timeout, if a timeout has occurred, or
 %% the received message.
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-handle_info(timeout, State) ->
-    ?LOG_INFO("process timed out~n", []),
-    {reply, {text, <<"{\"event\":\"timeout\"}">>}, State};
-handle_info(_Info, State) ->
-    {noreply, State}.
+handle_info(timeout, S) ->
+  ?LOG_INFO("process timed out~n", []),
+  {reply, {text, <<"{\"event\":\"timeout\"}">>}, S};
+handle_info(_Info, S) ->
+  {noreply, S}.
 
 %% @doc This function is called when the handling process is about to
 %%      terminate. it should be the opposite of Module:init/1 and do
 %%      any necessary cleaning up.
 %% @see <a href="http://hyber.org/websockets.yaws">Yaws</a>
-terminate(Reason, State) ->
-    ?LOG_INFO("terminate ~p: ~p (state:~p)~n", [self(), Reason, State]),
-    ok.
+terminate(Reason, S) ->
+  ?LOG_INFO("terminate ~p: ~p (state:~p)~n", [self(), Reason, S]),
+  ok.
 
 %%%===================================================================
 %%% Callback
@@ -161,5 +160,5 @@ terminate(Reason, State) ->
 %% @private
 %% @doc Event callback. This function is executed when message arrives.
 ev_callback({ETag, Event, Msg}, [WSRef, Id]) ->
-    Reply = ?RES_CH_NEW_MSG(Id, ETag, Event, Msg, json),
-    yaws_api:websocket_send(WSRef, {text, Reply}).
+  Reply = ?RES_CH_NEW_MSG(Id, ETag, Event, Msg, json),
+  yaws_api:websocket_send(WSRef, {text, Reply}).
